@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { v4 as uuid4 } from "uuid";
-import Calendar from "./Calendar";
-import TaskAddForm from "./TaskAddForm";
-import TaskList from "./TaskList";
+import Calendar from "../components/Calendar";
+import TaskAddForm from "../components/TaskAddForm";
+import TaskList from "../components/TaskList";
 
 const TaskManager = () => {
 	const [tasks, setTasks] = useState([]);
