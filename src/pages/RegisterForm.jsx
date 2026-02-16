@@ -1,12 +1,14 @@
 import { useState } from "react";
-import loginApi from "../api/login";
+import registerApi from "../api/register";
 
-const LoginForm = () => {
+const RegisterForm = () => {
 	const [userInput, setUserInput] = useState("");
 	const [passwordInput, setPasswordInput] = useState("");
+	const [submitPasswordInput, setSubmitPasswordInput] = useState("");
 	const [hasErrors, setErrors] = useState({
 		username: false,
 		password: false,
+		submitPassword: false,
 	});
 
 	const handleUserInput = (e) => {
@@ -17,10 +19,15 @@ const LoginForm = () => {
 		setPasswordInput(e.target.value);
 	};
 
+	const handleSubmitPasswordInput = (e) => {
+		setSubmitPasswordInput(e.target.value);
+	};
+
 	const validateErrors = () => {
 		const newErrors = {
 			username: false,
 			password: false,
+			submitPassword: false,
 		};
 
 		// валидация поля username
@@ -33,10 +40,15 @@ const LoginForm = () => {
 			newErrors.password = true;
 		}
 
+		// валидация поля submit password
+		if (submitPasswordInput != passwordInput) {
+			newErrors.submitPassword = true;
+		}
+
 		setErrors(newErrors);
 		console.log("new errors", newErrors);
 
-		return newErrors.username || newErrors.password;
+		return newErrors.username || newErrors.password || newErrors.submitPassword;
 	};
 
 	const submitForm = async (e) => {
@@ -44,7 +56,7 @@ const LoginForm = () => {
 
 		if (!validateErrors()) {
 			// отправка данных
-			loginApi({
+			registerApi({
 				username: userInput,
 				password: passwordInput,
 			});
@@ -52,6 +64,7 @@ const LoginForm = () => {
 			// опустошение полей ввода
 			setUserInput("");
 			setPasswordInput("");
+			setSubmitPasswordInput("");
 			return;
 		}
 	};
@@ -75,9 +88,17 @@ const LoginForm = () => {
 				// выделение поля при ошибке
 				className={hasErrors.password ? "error" : ""}
 			/>
+			<input
+				type="password"
+				value={submitPasswordInput}
+				placeholder="Submit password"
+				onChange={handleSubmitPasswordInput}
+				// выделение поля при ошибке
+				className={hasErrors.submitPassword ? "error" : ""}
+			/>
 			<input type="submit" value="Log in" />
 		</form>
 	);
 };
 
-export default LoginForm;
+export default RegisterForm;

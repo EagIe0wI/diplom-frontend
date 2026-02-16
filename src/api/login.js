@@ -4,7 +4,6 @@ const loginApi = async (data) => {
 	const { username, password } = data;
 	const response = await fetch(url, {
 		method: "POST",
-		// credentials: "include",
 		body: JSON.stringify({
 			username: username,
 			password: password,
