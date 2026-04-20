@@ -4,6 +4,8 @@ import Calendar from "../components/Calendar";
 import TaskAddForm from "../components/TaskAddForm";
 import TaskList from "../components/TaskList";
 
+// проблема с CSRF токеном
+
 const TaskManager = () => {
 	const [tasks, setTasks] = useState([]);
 	const [loading, setLoading] = useState(true);

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import loginApi from "../api/login";
 
+// нужно реализовать выведение имя пользователя, если тот зарегестрирован
+// иначе отображать "Гость" или "Guest"
+
 const LoginForm = () => {
 	const [userInput, setUserInput] = useState("");
 	const [passwordInput, setPasswordInput] = useState("");
