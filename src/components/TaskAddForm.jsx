@@ -1,5 +1,5 @@
 import { useState } from "react";
-import addTaskApi from "../api/tasks";
+import { taskAPI } from '../api/tasks';
 
 const TaskAddForm = ({ addTask }) => {
 	const [userInput, setUserInput] = useState("");
@@ -43,7 +43,7 @@ const TaskAddForm = ({ addTask }) => {
 		if (!validateErrors()) return;
 
 		// здесь отправка данных
-		addTaskApi({
+		taskAPI({
 			taskname: userInput,
 			deadline: deadline,
 		});

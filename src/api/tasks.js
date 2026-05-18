@@ -1,19 +1,23 @@
-const url = "http://127.0.0.1:8000/tasks/addTask/";
+import api from './axios';
 
-const addTaskApi = async (data) => {
-	const { taskNameData, deadlineData } = data;
-	const response = await fetch(url, {
-		method: "POST",
-		// credentials: "include",
-		body: JSON.stringify({
-			task_name: taskNameData,
-			deadline: deadlineData,
-		}),
-		headers: {
-			"Content-Type": "application/json",
-		},
-	});
-	console.log(response);
+export const taskAPI = {
+  getAll: async () => {
+    const response = await api.get('/tasks/tasks');
+    return response.data;
+  },
+
+  create: async (taskData) => {
+    const response = await api.post('/tasks/create', taskData);
+    return response.data;
+  },
+
+  update: async (id, updatedData) => {
+    const response = await api.put(`/tasks/${id}/update`, updatedData);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/tasks/${id}/delete`);
+    return response.data;
+  }
 };
-
-export default addTaskApi;
