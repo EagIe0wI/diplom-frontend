@@ -1,116 +1,95 @@
 import { useState } from "react";
 
-const Task = ({ text, deadline, removeTask, changeTask }) => {
-	const [textFieldInput, setTextFieldInput] = useState("");
-	const [deadlineInput, setNewDeadline] = useState("");
+const Task = ({ text, deadline, status, removeTask, changeTask }) => {
 	const [editing, setEditingStatus] = useState(false);
-	const [hasDeadline, setHasDeadline] = useState(deadline.length > 0);
-	const [isComlited, setStatusComplited] = useState(false);
-	const [isExpired, setStatusExpired] = useState(false);
-	const [hasErrors, setErrors] = useState({
-		input: false,
-		date: false,
-	});
+	const [textInput, setTextInput] = useState(text);
+	const [dateInput, setDateInput] = useState(deadline || "");
+	const [hasDeadline, setHasDeadline] = useState(!!deadline);
+	
+	const isCompleted = status === "todo"; 
 
-	const handleClickEditing = () => {
+	const handleEditToggle = () => {
 		setEditingStatus(!editing);
-		setTextFieldInput(text);
-		setNewDeadline(date);
+		setTextInput(text);
+		setDateInput(deadline || "");
+		setHasDeadline(!!deadline);
 	};
 
-	const handleClickSaving = () => {
-		if (!validateErrors()) return;
-		setStatusComplited(!isComlited);
-		setEditingStatus(!editing);
-		changeTask(textFieldInput, deadlineInput);
+	const handleSave = () => {
+		if (!textInput.trim()) return;
+
+		changeTask(textInput, hasDeadline ? dateInput : null);
+		setEditingStatus(false);
 	};
 
-	const handleClickComplited = () => {
-		setStatusComplited(!isComlited);
+	const handleStatusToggle = () => {
+		const newStatus = isCompleted ? "todo" : "done";
+		changeTask(text, deadline, newStatus);
 	};
 
-	const handleInput = (e) => {
-		setTextFieldInput(e.target.value);
+	const handlePostponeDay = () => {
+		const baseDate = deadline ? new Date(deadline) : new Date();
+		baseDate.setDate(baseDate.getDate() + 1);
+		const newDeadline = baseDate.toISOString().split('T')[0];
+		changeTask(text, newDeadline, status);
 	};
 
-	const handleCheckbox = () => {
-		setHasDeadline(!hasDeadline);
-	};
-
-	const handleDateInput = (e) => {
-		setNewDeadline(e.target.value);
-	};
-
-	const handleDeadline = (deadline) => {
-		const dateDeadline = new Date(deadline);
-		if (dateDeadline.length == 0) return;
-		if (dateDeadline - Date.now < 0) setStatusExpired(!isExpired);
-	};
-
-	const validateErrors = () => {
-		const newErrors = {
-			input: false,
-			date: false,
-		};
-
-		if (textFieldInput.length == 0) {
-			newErrors.input = true;
-		}
-		if (hasDeadline && deadlineInput.length == 0) {
-			newErrors.date = true;
-		}
-		setErrors(newErrors);
-		return !newErrors.input && !newErrors.date;
-	};
+	const isExpired = deadline && new Date(deadline) < new Date() && !isCompleted;
 
 	return (
-		<div>
-			<li className={isComlited}>
-				{editing ? (
-					<input
-						onChange={handleInput}
-						value={textFieldInput}
-						className={hasErrors.input ? "error" : ""}
-					/>
-				) : (
-					text
-				)}
+		<div className={`task-item ${isCompleted ? "completed" : ""} ${isExpired ? "expired" : ""}`}>
+			<li>
 				{editing ? (
 					<>
-						<input
-							type="checkbox"
-							id="deadline"
-							checked={hasDeadline}
-							onChange={handleCheckbox}
+						<input 
+							type="text" 
+							value={textInput} 
+							onChange={(e) => setTextInput(e.target.value)} 
 						/>
-						{hasDeadline ? (
-							<input
-								type="date"
-								onChange={handleDateInput}
-								value={deadline}
-								className={hasErrors.input ? "error" : ""}
+						<label>
+							<input 
+								type="checkbox" 
+								checked={hasDeadline} 
+								onChange={(e) => setHasDeadline(e.target.checked)} 
 							/>
-						) : (
-							<label htmlFor="deadline">Добавить дедлайн </label>
+							Дедлайн
+						</label>
+						{hasDeadline && (
+							<input 
+								type="date" 
+								value={dateInput} 
+								onChange={(e) => setDateInput(e.target.value)} 
+							/>
 						)}
 					</>
 				) : (
-					deadline && ` end in ${deadline}`
+					<>
+						<span className="task-text">{text}</span>
+						{deadline && <span className="task-deadline"> (До: {deadline})</span>}
+						{isExpired && <span className="expired-badge"> Просрочено!</span>}
+					</>
 				)}
 			</li>
 
-			{editing ? (
-				<>
-					<button onClick={handleClickEditing}>Отменить</button>
-					<button onClick={handleClickSaving}>Сохранить</button>
-				</>
-			) : (
-				<>
-					<button onClick={handleClickComplited}>Выполнено!</button>
-					<button onClick={handleClickEditing}>Изменить</button>
-					<button onClick={removeTask}>Удалить</button>
-				</>
-			)}
+			<div className="task-buttons">
+				{editing ? (
+					<>
+						<button onClick={handleSave}>Сохранить</button>
+						<button onClick={handleEditToggle}>Отмена</button>
+					</>
+				) : (
+					<>
+						<button onClick={handleStatusToggle}>
+							{isCompleted ? "Вернуть" : "Выполнено"}
+						</button>
+						{!isCompleted && (
+							<button onClick={handlePostponeDay}>Отложить на день</button>
+						)}
+						<button onClick={handleEditToggle}>Изменить</button>
+						<button onClick={removeTask}>Удалить</button>
+					</>
+				)}
+			</div>
 		</div>
 	);
 };

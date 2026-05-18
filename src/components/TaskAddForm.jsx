@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { taskAPI } from '../api/tasks';
 
-const TaskAddForm = ({ addTask }) => {
+const TaskAddForm = ({ cardId, onTaskCreated }) => {
 	const [userInput, setUserInput] = useState("");
 	const [deadline, setDeadline] = useState("");
 	const [hasDeadline, setHasDeadline] = useState(false);
@@ -10,48 +10,40 @@ const TaskAddForm = ({ addTask }) => {
 		date: false,
 	});
 
-	const handleInput = (e) => {
-		setUserInput(e.target.value);
-	};
-
-	const handleData = (e) => {
-		setDeadline(e.target.value);
-	};
-
-	const handleCheckbox = () => {
-		setHasDeadline(!hasDeadline);
-	};
+	const handleInput = (e) => setUserInput(e.target.value);
+	const handleData = (e) => setDeadline(e.target.value);
+	const handleCheckbox = () => setHasDeadline(!hasDeadline);
 
 	const validateErrors = () => {
-		const newErrors = {
-			input: false,
-			date: false,
-		};
-
-		if (userInput.length == 0) {
-			newErrors.input = true;
-		}
-		if (hasDeadline && deadline.length == 0) {
-			newErrors.date = true;
-		}
+		const newErrors = { input: false, date: false };
+		if (userInput.trim().length === 0) newErrors.input = true;
+		if (hasDeadline && deadline.length === 0) newErrors.date = true;
 		setErrors(newErrors);
 		return !newErrors.input && !newErrors.date;
 	};
 
-	const submitForm = (e) => {
+	const submitForm = async (e) => {
 		e.preventDefault();
 		if (!validateErrors()) return;
 
-		// здесь отправка данных
-		taskAPI({
-			taskname: userInput,
-			deadline: deadline,
-		});
+		try {
+			const newTask = await taskAPI.create(
+				cardId, 
+				userInput, 
+				hasDeadline ? deadline : null
+			);
 
-		addTask(userInput, deadline);
-		setUserInput("");
-		setDeadline("");
-		setHasDeadline(false);
+			if (onTaskCreated) {
+				onTaskCreated(newTask);
+			}
+
+			setUserInput("");
+			setDeadline("");
+			setHasDeadline(false);
+		} catch (err) {
+			console.error("Ошибка при создании задачи:", err);
+			alert("Не удалось сохранить задачу на сервере");
+		}
 	};
 
 	return (

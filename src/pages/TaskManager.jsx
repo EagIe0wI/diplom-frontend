@@ -1,129 +1,149 @@
 import { useState, useEffect } from "react";
-import { v4 as uuid4 } from "uuid";
 import Calendar from "../components/Calendar";
 import TaskAddForm from "../components/TaskAddForm";
 import TaskList from "../components/TaskList";
+import { cardAPI } from "../api/cards";
 import { taskAPI } from "../api/tasks";
 
-// const TaskManager = () => {
-// 	const [tasks, setTasks] = useState([]);
-// 	const [loading, setLoading] = useState(true);
-
-// 	const addTask = (text, deadline) => {
-// 		const newTask = {
-// 			id: uuid4(),
-// 			status: "active",
-// 			text,
-// 			deadline,
-// 			tags: [],
-// 		};
-// 		setTasks([newTask, ...tasks]);
-// 	};
-
-// 	const removeTask = (id) => () => {
-// 		setTasks(tasks.filter((task) => id !== task.id));
-// 	};
-
-// 	const changeTask = (id) => (text, deadline) => {
-// 		let changed = false;
-// 		const newTasks = tasks.map((task) => {
-// 			const newTask = { ...task };
-// 			if (id == task.id) {
-// 				changed = true;
-// 				newTask.text = text;
-// 				newTask.deadline = deadline;
-// 			}
-// 			return newTask;
-// 		});
-// 		if (changed) setTasks(newTasks);
-// 	};
-
-// 	useEffect(() => {
-// 		if (!loading) {
-// 			localStorage.setItem("tasks", JSON.stringify(tasks));
-// 		}
-// 	}, [tasks]);
-
-// 	useEffect(() => {
-// 		const data = localStorage.getItem("tasks");
-// 		if (data == "undefined") return;
-// 		setTasks(JSON.parse(data));
-// 		setLoading(false);
-// 	}, []);
-
-// 	return (
-// 		<>
-// 			<TaskAddForm addTask={addTask}></TaskAddForm>
-// 			<TaskList list={tasks} removeTask={removeTask} changeTask={changeTask}></TaskList>
-// 			<Calendar></Calendar>
-// 		</>
-// 	);
-// };
-
 const TaskManager = () => {
+	const [cards, setCards] = useState([]);
 	const [tasks, setTasks] = useState([]);
+	const [activeCardId, setActiveCardId] = useState(null);
+	const [newCardTitle, setNewCardTitle] = useState("");
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
+
+	console.log("=== РЕНДЕР КОМПОНЕНТА ===", { activeCardId });
 
 	useEffect(() => {
-		taskAPI.getAll()
-			.then((data) => {
-				const actualTasks = data.results || data;
-				
-				if (Array.isArray(actualTasks)) {
-					setTasks(actualTasks);
-				} else {
-					console.error("Бэкенд вернул не массив:", data);
-				}
+		setLoading(true);
+		cardAPI.getAll()
+			.then((cardsData) => {
+				const actualCards = cardsData.results || cardsData.cards || cardsData;
+				setCards(Array.isArray(actualCards) ? actualCards : []);
 			})
-			.catch((err) => {
-				console.error("Ошибка при получении задач:", err);
-				setError("Не удалось загрузить задачи. Проверьте авторизацию.");
-			})
-			.finally(() => {
-				setLoading(false);
-			});
+			.catch((err) => console.error("Ошибка загрузки карточек:", err))
+			.finally(() => setLoading(false));
 	}, []);
 
-	const addTask = (text, deadline) => {
-		const newTask = {
-			id: uuid4(),
-			status: "active",
-			text,
-			deadline,
-			tags: [],
-		};
-		setTasks([newTask, ...tasks]);
+	useEffect(() => {
+		if (!activeCardId) {
+			setTasks([]);
+			return;
+		}
+
+		setLoading(true);
+		taskAPI.getAll(activeCardId)
+			.then((tasksData) => {
+				const actualTasks = tasksData.results || tasksData.tasks || tasksData;
+				setTasks(Array.isArray(actualTasks) ? actualTasks : []);
+			})
+			.catch((err) => console.error("Ошибка загрузки задач:", err))
+			.finally(() => setLoading(false));
+	}, [activeCardId]);
+
+	const handleCreateCard = async (e) => {
+		e.preventDefault();
+		if (!newCardTitle.trim()) return;
+		try {
+			const createdCardFromServer = await cardAPI.create({ title: newCardTitle });
+			setCards([...cards, createdCardFromServer]);
+			setNewCardTitle("");
+		} catch (err) {
+			console.error("Ошибка создания карточки:", err);
+		}
 	};
 
-	const removeTask = (id) => () => {
-		setTasks(tasks.filter((task) => id !== task.id));
+	const handleDeleteCard = async (id, e) => {
+		e.stopPropagation(); 
+		try {
+			await cardAPI.delete(id);
+			setCards(cards.filter(c => c.id !== id));
+			if (activeCardId === id) setActiveCardId(null);
+		} catch (err) {
+			console.error(err);
+		}
 	};
 
-	const changeTask = (id) => (text, deadline) => {
-		let changed = false;
-		const newTasks = tasks.map((task) => {
-			const newTask = { ...task };
-			if (id == task.id) {
-				changed = true;
-				newTask.text = text;
-				newTask.deadline = deadline;
-			}
-			return newTask;
-		});
-		if (changed) setTasks(newTasks);
+	const handleTaskCreated = (newTask) => {
+		setTasks([...tasks, newTask]);
 	};
 
-	if (loading) return <div style={{ padding: "20px", textAlign: "center" }}>Загрузка ваших задач...</div>;
+	const handleUpdateTask = (id) => async (text, deadline, status) => {
+		try {
+			const updatedTask = await taskAPI.update(id, text, deadline, status, activeCardId);
+			setTasks(tasks.map(t => t.id === id ? updatedTask : t));
+		} catch (err) {
+			console.error(err);
+		}
+	};
+
+	const handleDeleteTask = (id) => async () => {
+		try {
+			await taskAPI.delete(id);
+			setTasks(tasks.filter(t => t.id !== id));
+		} catch (err) {
+			console.error(err);
+		}
+	};
+
+	if (loading) return <div className="loading-state">Синхронизация с сервером...</div>;
+
+	const activeCard = cards.find(c => c.id === activeCardId);
 
 	return (
-		<>
-			{error && <div style={{ color: "red", padding: "10px" }}>{error}</div>}
-			<TaskAddForm addTask={addTask}></TaskAddForm>
-			<TaskList list={tasks} removeTask={removeTask} changeTask={changeTask}></TaskList>
-			<Calendar></Calendar>
-		</>
+		<div className="task-manager-container">
+			<div className="main-content-zone">
+				{activeCardId === null ? (
+					<div className="cards-screen">
+						<h2>Ваши проекты (карточки)</h2>
+						<form onSubmit={handleCreateCard} className="card-form">
+							<input 
+								type="text" 
+								placeholder="Название новой карточки" 
+								value={newCardTitle}
+								onChange={e => setNewCardTitle(e.target.value)}
+							/>
+							<button type="submit">Создать карточку</button>
+						</form>
+
+						<div className="cards-grid">
+							{cards.map(card => {
+								return (
+									<div 
+										key={card.id} 
+										onClick={() => setActiveCardId(card.id)}
+										className="card-item"
+									>
+										<h3>{card.title}</h3>
+										<button 
+											onClick={(e) => handleDeleteCard(card.id, e)}
+											className="delete-card-btn"
+										>
+											х
+										</button>
+									</div>
+								);
+							})}
+						</div>
+					</div>
+				) : (
+					<div className="tasks-screen">
+						<button onClick={() => setActiveCardId(null)} className="back-btn">← Назад к карточкам</button>
+						<h2>Проект: {activeCard?.title}</h2>
+						
+						<TaskAddForm cardId={activeCardId} onTaskCreated={handleTaskCreated} />
+						
+						<TaskList 
+							list={tasks} 
+							removeTask={handleDeleteTask} 
+							changeTask={handleUpdateTask} 
+						/>
+					</div>
+				)}
+			</div>
+		</div>
 	);
+
 };
 
 export default TaskManager;
