@@ -1,10 +1,22 @@
 import api from './axios';
 
 export const taskAPI = {
-	getAll: async (cardId = null) => {
+	// getAll: async (cardId = null) => {
+	// 	let url = '/tasks/tasks/';
+	// 	if (cardId) {
+	// 		url += `?card=${cardId}`;
+	// 	}
+	// 	const response = await api.get(url);
+	// 	return response.data;
+	// },
+	getAll: async (cardId = null, search = '') => {
 		let url = '/tasks/tasks/';
-		if (cardId) {
-			url += `?card=${cardId}`;
+		const params = [];
+		if (cardId) params.push(`card=${cardId}`);
+		if (search) params.push(`search=${encodeURIComponent(search)}`);
+		
+		if (params.length > 0) {
+			url += `?${params.join('&')}`;
 		}
 		const response = await api.get(url);
 		return response.data;

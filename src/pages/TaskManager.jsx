@@ -1,149 +1,131 @@
-import { useState, useEffect } from "react";
-import Calendar from "../components/Calendar";
-import TaskAddForm from "../components/TaskAddForm";
-import TaskList from "../components/TaskList";
-import { cardAPI } from "../api/cards";
-import { taskAPI } from "../api/tasks";
+import React, { useState, useEffect } from 'react';
+import Card from '../components/card/Card';
+import CardForm from '../components/card/CardForm';
+import CardFilter from '../components/card/CardFilter';
+import CardList from '../components/card/CardList';
+import { cardAPI } from '../api/cards';
+import { taskAPI } from '../api/tasks'
 
-const TaskManager = () => {
+function TaskManager() {
 	const [cards, setCards] = useState([]);
 	const [tasks, setTasks] = useState([]);
-	const [activeCardId, setActiveCardId] = useState(null);
-	const [newCardTitle, setNewCardTitle] = useState("");
-	const [loading, setLoading] = useState(true);
-
-	console.log("=== РЕНДЕР КОМПОНЕНТА ===", { activeCardId });
+	const [activeCard, setActiveCard] = useState(null); 
+	const [loadingCards, setLoadingCards] = useState(false);
+	const [loadingTasks, setLoadingTasks] = useState(false);
+	const [isCardFormOpen, setIsCardFormOpen] = useState(false);
 
 	useEffect(() => {
-		setLoading(true);
+		setLoadingCards(true);
 		cardAPI.getAll()
-			.then((cardsData) => {
-				const actualCards = cardsData.results || cardsData.cards || cardsData;
-				setCards(Array.isArray(actualCards) ? actualCards : []);
-			})
-			.catch((err) => console.error("Ошибка загрузки карточек:", err))
-			.finally(() => setLoading(false));
+		.then((cardsData) => {
+			const actualCards = cardsData.results || cardsData.cards || cardsData;
+			setCards(Array.isArray(actualCards) ? actualCards : []);
+		})
+		.catch((err) => console.error("Ошибка карточек:", err))
+		.finally(() => setLoadingCards(false));
 	}, []);
 
-	useEffect(() => {
-		if (!activeCardId) {
-			setTasks([]);
-			return;
-		}
-
-		setLoading(true);
-		taskAPI.getAll(activeCardId)
-			.then((tasksData) => {
-				const actualTasks = tasksData.results || tasksData.tasks || tasksData;
-				setTasks(Array.isArray(actualTasks) ? actualTasks : []);
-			})
-			.catch((err) => console.error("Ошибка загрузки задач:", err))
-			.finally(() => setLoading(false));
-	}, [activeCardId]);
-
-	const handleCreateCard = async (e) => {
-		e.preventDefault();
-		if (!newCardTitle.trim()) return;
+	const handleSearchCards = async (searchText) => {
+		setLoadingCards(true);
 		try {
-			const createdCardFromServer = await cardAPI.create({ title: newCardTitle });
-			setCards([...cards, createdCardFromServer]);
-			setNewCardTitle("");
+		const cardsData = await cardAPI.getAll(searchText);
+		const actualCards = cardsData.results || cardsData.cards || cardsData;
+		setCards(Array.isArray(actualCards) ? actualCards : []);
 		} catch (err) {
-			console.error("Ошибка создания карточки:", err);
+		console.error("Ошибка поиска карточек:", err);
+		} finally {
+		setLoadingCards(false);
 		}
 	};
 
-	const handleDeleteCard = async (id, e) => {
-		e.stopPropagation(); 
+	const handleCreateCard = async (title) => {
 		try {
-			await cardAPI.delete(id);
-			setCards(cards.filter(c => c.id !== id));
-			if (activeCardId === id) setActiveCardId(null);
+		const newCard = await cardAPI.create(title);
+		setCards((prevCards) => [...prevCards, newCard]);
+		setIsCardFormOpen(false); 
 		} catch (err) {
-			console.error(err);
+		console.error("Ошибка создания карточки:", err);
 		}
 	};
 
-	const handleTaskCreated = (newTask) => {
-		setTasks([...tasks, newTask]);
-	};
-
-	const handleUpdateTask = (id) => async (text, deadline, status) => {
+	const handleEnterCard = async (card) => {
+		setActiveCard(card);
+		setLoadingTasks(true);
+		setTasks([]);
 		try {
-			const updatedTask = await taskAPI.update(id, text, deadline, status, activeCardId);
-			setTasks(tasks.map(t => t.id === id ? updatedTask : t));
+		const tasksData = await taskAPI.getAll(card.id);
+		const actualTasks = tasksData.results || tasksData.tasks || tasksData;
+		setTasks(Array.isArray(actualTasks) ? actualTasks : []);
 		} catch (err) {
-			console.error(err);
+		console.error("Ошибка задач:", err);
+		} finally {
+		setLoadingTasks(false);
 		}
 	};
 
-	const handleDeleteTask = (id) => async () => {
+	const handleLeaveCard = () => {
+		setActiveCard(null);
+		setTasks([]);
+	};
+
+	const handleAddTask = async (cardId, title, deadline) => {
 		try {
-			await taskAPI.delete(id);
-			setTasks(tasks.filter(t => t.id !== id));
+		const newTask = await taskAPI.create(cardId, title, deadline);
+		setTasks((prevTasks) => [...prevTasks, newTask]);
 		} catch (err) {
-			console.error(err);
+		console.error("Ошибка при создании задачи:", err);
 		}
 	};
 
-	if (loading) return <div className="loading-state">Синхронизация с сервером...</div>;
+	const handleSearchTasks = async (searchText) => {
+		setLoadingTasks(true);
+		try {
+		const tasksData = await taskAPI.getAll(activeCard.id, searchText);
+		const actualTasks = tasksData.results || tasksData.tasks || tasksData;
+		setTasks(Array.isArray(actualTasks) ? actualTasks : []);
+		} catch (err) {
+		console.error("Ошибка фильтрации:", err);
+		} finally {
+		setLoadingTasks(false);
+		}
+	};
 
-	const activeCard = cards.find(c => c.id === activeCardId);
+	if (activeCard) {
+		return (
+		<Card 
+			activeCard={activeCard}
+			tasks={tasks}
+			loadingTasks={loadingTasks}
+			onLeave={handleLeaveCard}
+			onAddTask={handleAddTask}
+			onSearchTasks={handleSearchTasks}
+		/>
+		);
+	}
 
 	return (
-		<div className="task-manager-container">
-			<div className="main-content-zone">
-				{activeCardId === null ? (
-					<div className="cards-screen">
-						<h2>Ваши проекты (карточки)</h2>
-						<form onSubmit={handleCreateCard} className="card-form">
-							<input 
-								type="text" 
-								placeholder="Название новой карточки" 
-								value={newCardTitle}
-								onChange={e => setNewCardTitle(e.target.value)}
-							/>
-							<button type="submit">Создать карточку</button>
-						</form>
+		<div>
+		<h2>Все карточки</h2>
+		
+		<div>
+			<CardFilter onSearchChange={handleSearchCards} />
+			{!isCardFormOpen && (
+			<button onClick={() => setIsCardFormOpen(true)}>+</button>
+			)}
+		</div>
 
-						<div className="cards-grid">
-							{cards.map(card => {
-								return (
-									<div 
-										key={card.id} 
-										onClick={() => setActiveCardId(card.id)}
-										className="card-item"
-									>
-										<h3>{card.title}</h3>
-										<button 
-											onClick={(e) => handleDeleteCard(card.id, e)}
-											className="delete-card-btn"
-										>
-											х
-										</button>
-									</div>
-								);
-							})}
-						</div>
-					</div>
-				) : (
-					<div className="tasks-screen">
-						<button onClick={() => setActiveCardId(null)} className="back-btn">← Назад к карточкам</button>
-						<h2>Проект: {activeCard?.title}</h2>
-						
-						<TaskAddForm cardId={activeCardId} onTaskCreated={handleTaskCreated} />
-						
-						<TaskList 
-							list={tasks} 
-							removeTask={handleDeleteTask} 
-							changeTask={handleUpdateTask} 
-						/>
-					</div>
-				)}
-			</div>
+		{isCardFormOpen && (
+			<CardForm 
+			onSave={handleCreateCard} 
+			onCancel={() => setIsCardFormOpen(false)} 
+			/>
+		)}
+
+		{loadingCards && <p>Загрузка карточек...</p>}
+		
+		<CardList cards={cards} onEnterCard={handleEnterCard} />
 		</div>
 	);
-
-};
+}
 
 export default TaskManager;

@@ -1,0 +1,34 @@
+import React, { useState } from 'react';
+
+function CardForm({ onSave, onCancel }) {
+  const [title, setTitle] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      alert("Название карточки не может быть пустым");
+      return;
+    }
+    onSave(title);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h4>Новая карточка</h4>
+      <div>
+        <label>Название: </label>
+        <input 
+          type="text" 
+          value={title} 
+          onChange={(e) => setTitle(e.target.value)} 
+          placeholder="Название карточки"
+        />
+      </div>
+      <br />
+      <button type="submit">сохранить</button>
+      <button type="button" onClick={onCancel}>отменить</button>
+    </form>
+  );
+}
+
+export default CardForm;

@@ -1,4 +1,4 @@
-import "./styles/App.css";
+// import "./styles/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import TaskManager from "./pages/TaskManager";
 import LoginForm from "./pages/LoginForm";
