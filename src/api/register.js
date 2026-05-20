@@ -2,7 +2,9 @@ import api from './axios';
 
 api.interceptors.request.use((config) => {
 	const token = localStorage.getItem('access_token');
-	const isAuthRequest = config.url.includes('/accounts/register/') || config.url.includes('/login/');
+	const isAuthRequest =
+		config.url.includes('/accounts/register/') ||
+		config.url.includes('/login/');
 	if (token && !isAuthRequest) {
 		config.headers.Authorization = `Bearer ${token}`;
 	}
@@ -25,7 +27,10 @@ export const loginAPI = async (data) => {
 
 export const registerAPI = async (data) => {
 	const { username, password } = data;
-	const response = await api.post('/accounts/register/', { username, password });
+	const response = await api.post('/accounts/register/', {
+		username,
+		password,
+	});
 	if (response.data && response.data.access) {
 		localStorage.setItem('access_token', response.data.access);
 		localStorage.setItem('refresh_token', response.data.refresh);
@@ -42,10 +47,13 @@ export const logoutAPI = async () => {
 	try {
 		const refreshToken = localStorage.getItem('refresh_token');
 		await api.post('/accounts/logout/', {
-			refresh: refreshToken
+			refresh: refreshToken,
 		});
 	} catch (err) {
-		console.error("Ошибка при бане токена на сервере:", err.response?.data || err.message);
+		console.error(
+			'Ошибка при бане токена на сервере:',
+			err.response?.data || err.message,
+		);
 	} finally {
 		localStorage.removeItem('access_token');
 		localStorage.removeItem('refresh_token');

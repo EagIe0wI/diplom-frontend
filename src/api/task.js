@@ -6,7 +6,7 @@ export const taskAPI = {
 		const params = [];
 		if (cardId) params.push(`card=${cardId}`);
 		if (search) params.push(`search=${encodeURIComponent(search)}`);
-		
+
 		if (params.length > 0) {
 			url += `?${params.join('&')}`;
 		}
@@ -16,10 +16,10 @@ export const taskAPI = {
 
 	create: async (card, title, startDate, description) => {
 		const response = await api.post('/tasks/create/', {
-		title,
-		start_date: startDate,
-		description,
-		card: card
+			title,
+			start_date: startDate,
+			description,
+			card: card,
 		});
 		return response.data;
 	},
@@ -38,5 +38,5 @@ export const taskAPI = {
 	delete: async (id) => {
 		const response = await api.delete(`/tasks/${id}/delete/`);
 		return response.data;
-	}
+	},
 };

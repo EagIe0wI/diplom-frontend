@@ -1,10 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import TaskManager from "./pages/TaskManager";
-import LoginForm from "./pages/LoginForm";
-import RegisterForm from "./pages/RegisterForm";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import TaskManager from './pages/TaskManager';
+import LoginForm from './pages/LoginForm';
+import RegisterForm from './pages/RegisterForm';
 
 const ProtectedRoute = ({ children }) => {
-	const token = localStorage.getItem("token");
+	const token = localStorage.getItem('token');
 	if (!token) {
 		return <Navigate to="/login" replace />;
 	}
@@ -15,13 +15,13 @@ function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route 
-					path="/tasks" 
+				<Route
+					path="/tasks"
 					element={
 						<ProtectedRoute>
 							<TaskManager />
 						</ProtectedRoute>
-					} 
+					}
 				/>
 				<Route path="/login" element={<LoginForm />} />
 				<Route path="/register" element={<RegisterForm />} />
