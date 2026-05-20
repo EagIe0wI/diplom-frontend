@@ -15,8 +15,8 @@ export const cardAPI = {
 		return response.data;
 	},
 
-	update: async (id, updatedData) => {
-		const response = await api.put(`/cards/${id}/update/`, updatedData);
+	update: async (id, title) => {
+		const response = await api.put(`/cards/${id}/update/`, { title });
 		return response.data;
 	},
 

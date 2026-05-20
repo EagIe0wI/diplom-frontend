@@ -1,29 +1,12 @@
-// import Task from "./Task";
-
-// const TaskList = ({ list, removeTask, changeTask }) => {
-// 	return list?.map((task) => {
-// 		return (
-// 			<Task
-// 				key={task.id}
-// 				status={task.status}
-// 				text={task.text}
-// 				tags={task.tags}
-// 				deadline={task.deadline}
-// 				removeTask={removeTask(task.id)}
-// 				changeTask={changeTask(task.id)}
-// 			/>
-// 		);
-// 	});
-// };
-
 import React from 'react';
 import Task from './Task';
+import '/src/styles/TaskList.css';
 
-function TaskList({ tasks }) {
+function TaskList({ tasks, onEnterTask }) {
   return (
-    <ul>
+    <ul style={{ paddingLeft: 0 }}>
       {tasks.map((task) => (
-        <Task key={task.id} task={task} />
+        <Task key={task.id} task={task} onEnterTask={onEnterTask} />
       ))}
     </ul>
   );

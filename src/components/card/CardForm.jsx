@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-function CardForm({ onSave, onCancel }) {
-  const [title, setTitle] = useState('');
+function CardForm({ onSave, onCancel, card }) {
+  const [title, setTitle] = useState(card ? (card.title || card.name) : '');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,7 +14,7 @@ function CardForm({ onSave, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h4>Новая карточка</h4>
+      <h4>{card ? 'Редактировать карточку' : 'Новая карточка'}</h4>
       <div>
         <label>Название: </label>
         <input 
@@ -25,7 +25,7 @@ function CardForm({ onSave, onCancel }) {
         />
       </div>
       <br />
-      <button type="submit">сохранить</button>
+      <button type="submit">{card ? 'обновить' : 'сохранить'}</button>
       <button type="button" onClick={onCancel}>отменить</button>
     </form>
   );

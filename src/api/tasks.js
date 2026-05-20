@@ -1,14 +1,6 @@
 import api from './axios';
 
 export const taskAPI = {
-	// getAll: async (cardId = null) => {
-	// 	let url = '/tasks/tasks/';
-	// 	if (cardId) {
-	// 		url += `?card=${cardId}`;
-	// 	}
-	// 	const response = await api.get(url);
-	// 	return response.data;
-	// },
 	getAll: async (cardId = null, search = '') => {
 		let url = '/tasks/tasks/';
 		const params = [];
@@ -22,21 +14,23 @@ export const taskAPI = {
 		return response.data;
 	},
 
-	create: async (card, title, deadline) => {
+	create: async (card, title, startDate, description) => {
 		const response = await api.post('/tasks/create/', {
-			title,
-			deadline,
-			card: card
+		title,
+		start_date: startDate,
+		description,
+		card: card
 		});
 		return response.data;
 	},
 
-	update: async (id, title, deadline, status, card) => {
+	update: async (id, title, start_date, status, card, description) => {
 		const response = await api.put(`/tasks/${id}/update/`, {
 			title,
-			deadline,
+			start_date,
 			status,
-			card: card
+			description,
+			card: card,
 		});
 		return response.data;
 	},

@@ -28,23 +28,35 @@ function TaskManager() {
 	const handleSearchCards = async (searchText) => {
 		setLoadingCards(true);
 		try {
-		const cardsData = await cardAPI.getAll(searchText);
-		const actualCards = cardsData.results || cardsData.cards || cardsData;
-		setCards(Array.isArray(actualCards) ? actualCards : []);
+			const cardsData = await cardAPI.getAll(searchText);
+			const actualCards = cardsData.results || cardsData.cards || cardsData;
+			setCards(Array.isArray(actualCards) ? actualCards : []);
 		} catch (err) {
-		console.error("Ошибка поиска карточек:", err);
+			console.error("Ошибка поиска карточек:", err);
 		} finally {
-		setLoadingCards(false);
+			setLoadingCards(false);
 		}
 	};
 
 	const handleCreateCard = async (title) => {
 		try {
-		const newCard = await cardAPI.create(title);
-		setCards((prevCards) => [...prevCards, newCard]);
-		setIsCardFormOpen(false); 
+			const newCard = await cardAPI.create(title);
+			setCards((prevCards) => [...prevCards, newCard]);
+			setIsCardFormOpen(false); 
 		} catch (err) {
-		console.error("Ошибка создания карточки:", err);
+			console.error("Ошибка создания карточки:", err);
+		}
+	};
+
+	const handleDeleteCard = async (cardId) => {
+		try {
+			await cardAPI.delete(cardId);
+			setCards((prevCards) => prevCards.filter((card) => card.id !== cardId));
+			setActiveCard(null);
+			setTasks([]);
+		} catch (err) {
+			console.error("Ошибка при удалении карточки:", err);
+			alert("Не удалось удалить карточку на сервере");
 		}
 	};
 
@@ -53,13 +65,13 @@ function TaskManager() {
 		setLoadingTasks(true);
 		setTasks([]);
 		try {
-		const tasksData = await taskAPI.getAll(card.id);
-		const actualTasks = tasksData.results || tasksData.tasks || tasksData;
-		setTasks(Array.isArray(actualTasks) ? actualTasks : []);
+			const tasksData = await taskAPI.getAll(card.id);
+			const actualTasks = tasksData.results || tasksData.tasks || tasksData;
+			setTasks(Array.isArray(actualTasks) ? actualTasks : []);
 		} catch (err) {
-		console.error("Ошибка задач:", err);
+			console.error("Ошибка задач:", err);
 		} finally {
-		setLoadingTasks(false);
+			setLoadingTasks(false);
 		}
 	};
 
@@ -68,61 +80,98 @@ function TaskManager() {
 		setTasks([]);
 	};
 
-	const handleAddTask = async (cardId, title, deadline) => {
+	const handleAddTask = async (cardId, title, description, startDate) => {
 		try {
-		const newTask = await taskAPI.create(cardId, title, deadline);
-		setTasks((prevTasks) => [...prevTasks, newTask]);
+			const formattedDate = startDate === "" ? null : startDate;
+			const newTask = await taskAPI.create(cardId, title, formattedDate, description);
+			setTasks((prevTasks) => [...prevTasks, newTask]);
 		} catch (err) {
-		console.error("Ошибка при создании задачи:", err);
+			console.error("Ошибка при создании задачи:", err);
 		}
 	};
 
 	const handleSearchTasks = async (searchText) => {
 		setLoadingTasks(true);
 		try {
-		const tasksData = await taskAPI.getAll(activeCard.id, searchText);
-		const actualTasks = tasksData.results || tasksData.tasks || tasksData;
-		setTasks(Array.isArray(actualTasks) ? actualTasks : []);
+			const tasksData = await taskAPI.getAll(activeCard.id, searchText);
+			const actualTasks = tasksData.results || tasksData.tasks || tasksData;
+			setTasks(Array.isArray(actualTasks) ? actualTasks : []);
 		} catch (err) {
-		console.error("Ошибка фильтрации:", err);
+			console.error("Ошибка фильтрации:", err);
 		} finally {
-		setLoadingTasks(false);
+			setLoadingTasks(false);
+		}
+	};
+
+	const handleDeleteTask = async (taskId) => {
+		try {
+			await taskAPI.delete(taskId);
+			setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+		} catch (err) {
+			console.error("Ошибка при удалении задачи:", err);
+			alert("Не удалось удалить задачу на сервере");
+		}
+	};
+
+	const handleUpdateTask = async (taskId, title, description, startDate, status) => {
+		try {
+			const formattedDate = startDate === "" ? null : startDate;
+			const updatedTask = await taskAPI.update(taskId, title, formattedDate, status, activeCard.id, description);
+			setTasks((prevTasks) => 
+				prevTasks.map((task) => (task.id === taskId ? updatedTask : task))
+			);
+			return updatedTask;
+		} catch (err) {
+			console.error("Ошибка при обновлении задачи:", err);
+		}
+	};
+
+	const handleUpdateCard = async (cardId, newTitle) => {
+		try {
+			const updatedCard = await cardAPI.update(cardId, newTitle);
+			setCards((prevCards) => 
+				prevCards.map((card) => (card.id === cardId ? updatedCard : card))
+			);
+			setActiveCard(updatedCard);
+		} catch (err) {
+			console.error("Ошибка обновления карточки:", err);
+			alert("Не удалось обновить карточку");
 		}
 	};
 
 	if (activeCard) {
 		return (
-		<Card 
-			activeCard={activeCard}
-			tasks={tasks}
-			loadingTasks={loadingTasks}
-			onLeave={handleLeaveCard}
-			onAddTask={handleAddTask}
-			onSearchTasks={handleSearchTasks}
-		/>
+			<Card 
+				activeCard={activeCard}
+				tasks={tasks}
+				loadingTasks={loadingTasks}
+				onLeave={handleLeaveCard}
+				onAddTask={handleAddTask}
+				onSearchTasks={handleSearchTasks}
+				onDeleteTask={handleDeleteTask}
+				onDeleteCard={handleDeleteCard}
+				onUpdateTask={handleUpdateTask}
+				onUpdateCard={handleUpdateCard}
+			/>
 		);
 	}
 
 	return (
 		<div>
 		<h2>Все карточки</h2>
-		
 		<div>
 			<CardFilter onSearchChange={handleSearchCards} />
 			{!isCardFormOpen && (
 			<button onClick={() => setIsCardFormOpen(true)}>+</button>
 			)}
 		</div>
-
 		{isCardFormOpen && (
 			<CardForm 
 			onSave={handleCreateCard} 
 			onCancel={() => setIsCardFormOpen(false)} 
 			/>
 		)}
-
 		{loadingCards && <p>Загрузка карточек...</p>}
-		
 		<CardList cards={cards} onEnterCard={handleEnterCard} />
 		</div>
 	);
