@@ -88,13 +88,6 @@ function Card({
         />
       )}
 
-      {isFormOpen && (
-        <TaskForm 
-          onSave={handleSaveTask} 
-          onCancel={() => setIsFormOpen(false)} 
-        />
-      )}
-
       <h3>Задачи:</h3>
       {loadingTasks && <p>Загрузка задач...</p>}
 

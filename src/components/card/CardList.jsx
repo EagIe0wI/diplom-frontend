@@ -3,7 +3,7 @@ import '/src/styles/CardList.css';
 
 function CardList({ cards, onEnterCard }) {
   return (
-    <ul style={{ paddingLeft: 0 }}> {/* Очищаем дефолтный отступ списка */}
+    <ul>
       {cards.map((card) => (
         <li 
           key={card.id}
@@ -13,6 +13,10 @@ function CardList({ cards, onEnterCard }) {
           <span className="card-list-link">
             {card.title || card.name} ➔
           </span>
+          
+          <div>
+            Задач внутри: {card.tasks_count !== undefined ? card.tasks_count : 0}
+          </div>
         </li>
       ))}
     </ul>

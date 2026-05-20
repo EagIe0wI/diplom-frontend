@@ -3,32 +3,50 @@ import Card from '../components/card/Card';
 import CardForm from '../components/card/CardForm';
 import CardFilter from '../components/card/CardFilter';
 import CardList from '../components/card/CardList';
-import { cardAPI } from '../api/cards';
-import { taskAPI } from '../api/tasks'
+import CategoryFilter from '../components/category/CategoryFilter';
+import { cardAPI, taskAPI, categoryAPI, getUserMeAPI, logoutAPI } from '../api';
+import { useNavigate } from 'react-router-dom';
 
-function TaskManager() {
+const TaskManager = () => {
 	const [cards, setCards] = useState([]);
 	const [tasks, setTasks] = useState([]);
+	const [categories, setCategories] = useState([]);
 	const [activeCard, setActiveCard] = useState(null); 
 	const [loadingCards, setLoadingCards] = useState(false);
-	const [loadingTasks, setLoadingTasks] = useState(false);
 	const [isCardFormOpen, setIsCardFormOpen] = useState(false);
+	const [loadingTasks, setLoadingTasks] = useState(false);
+	const [currentSearch, setCurrentSearch] = useState('');
+  	const [currentCategory, setCurrentCategory] = useState('');
+	const [username, setUsername] = useState('');
+
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		setLoadingCards(true);
-		cardAPI.getAll()
-		.then((cardsData) => {
+		Promise.all([cardAPI.getAll(), categoryAPI.getAll(), getUserMeAPI()])
+		.then(([cardsData, categoriesData, userData]) => {
 			const actualCards = cardsData.results || cardsData.cards || cardsData;
+			const actualCategories = categoriesData.results || categoriesData.categories || categoriesData;
+			
 			setCards(Array.isArray(actualCards) ? actualCards : []);
+			setCategories(Array.isArray(actualCategories) ? actualCategories : []);
+			setUsername(userData.username);
 		})
-		.catch((err) => console.error("Ошибка карточек:", err))
+		.catch((err) => console.error("Ошибка инициализации:", err))
 		.finally(() => setLoadingCards(false));
 	}, []);
 
-	const handleSearchCards = async (searchText) => {
+	const handleLogout = async () => {
+		if (confirm("Вы уверены, что хотите выйти?")) {
+			await logoutAPI();
+			navigate('/login');
+		}
+	};
+
+	const fetchFilteredCards = async (search, categoryId) => {
 		setLoadingCards(true);
 		try {
-			const cardsData = await cardAPI.getAll(searchText);
+			const cardsData = await cardAPI.getAll(search, categoryId);
 			const actualCards = cardsData.results || cardsData.cards || cardsData;
 			setCards(Array.isArray(actualCards) ? actualCards : []);
 		} catch (err) {
@@ -36,6 +54,16 @@ function TaskManager() {
 		} finally {
 			setLoadingCards(false);
 		}
+	};
+
+	const handleSearchCards = (searchText) => {
+		setCurrentSearch(searchText);
+		fetchFilteredCards(searchText, currentCategory);
+	};
+
+	const handleCategoryChange = (categoryId) => {
+		setCurrentCategory(categoryId);
+		fetchFilteredCards(currentSearch, categoryId);
 	};
 
 	const handleCreateCard = async (title) => {
@@ -78,6 +106,7 @@ function TaskManager() {
 	const handleLeaveCard = () => {
 		setActiveCard(null);
 		setTasks([]);
+		fetchFilteredCards(currentSearch, currentCategory);
 	};
 
 	const handleAddTask = async (cardId, title, description, startDate) => {
@@ -158,17 +187,25 @@ function TaskManager() {
 
 	return (
 		<div>
-		<h2>Все карточки</h2>
+			<header>
+				<span>Пользователь: <strong>{username}</strong></span>
+				<button onClick={handleLogout}>Выйти</button>
+			</header>
+			<h2>Все карточки</h2>
 		<div>
 			<CardFilter onSearchChange={handleSearchCards} />
+			<CategoryFilter 
+				categories={categories} 
+				onCategoryChange={handleCategoryChange} 
+			/>
 			{!isCardFormOpen && (
 			<button onClick={() => setIsCardFormOpen(true)}>+</button>
 			)}
 		</div>
 		{isCardFormOpen && (
 			<CardForm 
-			onSave={handleCreateCard} 
-			onCancel={() => setIsCardFormOpen(false)} 
+				onSave={handleCreateCard} 
+				onCancel={() => setIsCardFormOpen(false)} 
 			/>
 		)}
 		{loadingCards && <p>Загрузка карточек...</p>}
