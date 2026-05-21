@@ -11,6 +11,6 @@
 }
 
 .card-list-item:hover .card-list-link {
-  color: #0056b3;
+  color: blue;
   text-decoration: underline;
 }

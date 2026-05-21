@@ -246,7 +246,9 @@ const TaskManager = () => {
 				/>
 			)}
 			{loadingCards && <p>Загрузка карточек...</p>}
-			<CardList cards={cards} onEnterCard={handleEnterCard} />
+			{!isCardFormOpen && (
+				<CardList cards={cards} onEnterCard={handleEnterCard} />
+			)}
 		</div>
 	);
 };

@@ -10,6 +10,6 @@
 }
 
 .task-list-item:hover .task-list-link {
-  color: #28a745;
+  color: blue;
   text-decoration: underline;
 }

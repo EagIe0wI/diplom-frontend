@@ -4,7 +4,7 @@ import '/src/styles/TaskList.css';
 
 function TaskList({ tasks, onEnterTask }) {
 	return (
-		<ul style={{ paddingLeft: 0 }}>
+		<ul>
 			{tasks.map((task) => (
 				<Task key={task.id} task={task} onEnterTask={onEnterTask} />
 			))}

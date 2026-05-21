@@ -49,9 +49,7 @@ const LoginForm = () => {
 		<form onSubmit={submitForm}>
 			<p>Sign in to continue</p>
 
-			{apiError && (
-				<p style={{ color: 'red', fontSize: '14px' }}>{apiError}</p>
-			)}
+			{apiError && <p className="error">{apiError}</p>}
 
 			<input
 				name="username"
