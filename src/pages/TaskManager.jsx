@@ -4,19 +4,21 @@ import CardForm from '../components/card/CardForm';
 import CardFilter from '../components/card/CardFilter';
 import CardList from '../components/card/CardList';
 import CategoryFilter from '../components/category/CategoryFilter';
+import CategoryForm from '../components/category/CategoryForm';
 import { cardAPI, taskAPI, categoryAPI, getUserMeAPI, logoutAPI } from '../api';
 import { useNavigate } from 'react-router-dom';
 
 const TaskManager = () => {
 	const [cards, setCards] = useState([]);
 	const [tasks, setTasks] = useState([]);
-	const [categories, setCategories] = useState([]);
 	const [activeCard, setActiveCard] = useState(null);
 	const [loadingCards, setLoadingCards] = useState(false);
 	const [isCardFormOpen, setIsCardFormOpen] = useState(false);
 	const [loadingTasks, setLoadingTasks] = useState(false);
 	const [currentSearch, setCurrentSearch] = useState('');
+	const [categories, setCategories] = useState([]);
 	const [currentCategory, setCurrentCategory] = useState('');
+	const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
 	const [username, setUsername] = useState('');
 
 	const navigate = useNavigate();
@@ -24,13 +26,13 @@ const TaskManager = () => {
 	useEffect(() => {
 		setLoadingCards(true);
 		Promise.all([cardAPI.getAll(), categoryAPI.getAll(), getUserMeAPI()])
-			.then(([cardsData, categoriesData, userData]) => {
+			.then(([cardsData, categoryData, userData]) => {
 				const actualCards =
 					cardsData.results || cardsData.cards || cardsData;
 				const actualCategories =
-					categoriesData.results ||
-					categoriesData.categories ||
-					categoriesData;
+					categoryData.results ||
+					categoryData.categories ||
+					categoryData;
 
 				setCards(Array.isArray(actualCards) ? actualCards : []);
 				setCategories(
@@ -68,18 +70,37 @@ const TaskManager = () => {
 		fetchFilteredCards(searchText, currentCategory);
 	};
 
-	const handleCategoryChange = (categoryId) => {
-		setCurrentCategory(categoryId);
-		fetchFilteredCards(currentSearch, categoryId);
-	};
-
-	const handleCreateCard = async (title) => {
+	const handleCreateCard = async (title, description, categoryId) => {
+		console.log('Пытаемся создать карточку:', {
+			title,
+			description,
+			categoryId,
+		});
 		try {
-			const newCard = await cardAPI.create(title);
+			const newCard = await cardAPI.create(
+				title,
+				description,
+				categoryId,
+			);
 			setCards((prevCards) => [...prevCards, newCard]);
 			setIsCardFormOpen(false);
 		} catch (err) {
 			console.error('Ошибка создания карточки:', err);
+		}
+	};
+
+	const handleUpdateCard = async (cardId, newTitle) => {
+		try {
+			const updatedCard = await cardAPI.update(cardId, newTitle);
+			setCards((prevCards) =>
+				prevCards.map((card) =>
+					card.id === cardId ? updatedCard : card,
+				),
+			);
+			setActiveCard(updatedCard);
+		} catch (err) {
+			console.error('Ошибка обновления карточки:', err);
+			alert('Не удалось обновить карточку');
 		}
 	};
 
@@ -117,6 +138,22 @@ const TaskManager = () => {
 		setActiveCard(null);
 		setTasks([]);
 		fetchFilteredCards(currentSearch, currentCategory);
+	};
+
+	const handleCategoryChange = (categoryId) => {
+		setCurrentCategory(categoryId);
+		fetchFilteredCards(currentSearch, categoryId);
+	};
+
+	const handleCreateCategory = async (name) => {
+		try {
+			const newCategory = await categoryAPI.create(name);
+			setCategories((prevCategories) => [...prevCategories, newCategory]);
+			setIsCategoryFormOpen(false);
+		} catch (err) {
+			console.error('Ошибка создания категории:', err);
+			alert('Не удалось создать категорию');
+		}
 	};
 
 	const handleAddTask = async (cardId, title, description, startDate) => {
@@ -188,27 +225,13 @@ const TaskManager = () => {
 		}
 	};
 
-	const handleUpdateCard = async (cardId, newTitle) => {
-		try {
-			const updatedCard = await cardAPI.update(cardId, newTitle);
-			setCards((prevCards) =>
-				prevCards.map((card) =>
-					card.id === cardId ? updatedCard : card,
-				),
-			);
-			setActiveCard(updatedCard);
-		} catch (err) {
-			console.error('Ошибка обновления карточки:', err);
-			alert('Не удалось обновить карточку');
-		}
-	};
-
 	if (activeCard) {
 		return (
 			<Card
 				activeCard={activeCard}
 				tasks={tasks}
 				loadingTasks={loadingTasks}
+				categories={categories}
 				onLeave={handleLeaveCard}
 				onAddTask={handleAddTask}
 				onSearchTasks={handleSearchTasks}
@@ -226,7 +249,7 @@ const TaskManager = () => {
 				<span>
 					Пользователь: <strong>{username}</strong>
 				</span>
-				<button onClick={handleLogout}>Выйти</button>
+				<button onClick={handleLogout}> Выйти</button>
 			</header>
 			<h2>Все карточки</h2>
 			<div>
@@ -236,17 +259,31 @@ const TaskManager = () => {
 					onCategoryChange={handleCategoryChange}
 				/>
 				{!isCardFormOpen && (
-					<button onClick={() => setIsCardFormOpen(true)}>+</button>
+					<button onClick={() => setIsCardFormOpen(true)}>
+						+ Карточка
+					</button>
+				)}
+				{!isCategoryFormOpen && (
+					<button onClick={() => setIsCategoryFormOpen(true)}>
+						+ Категория
+					</button>
 				)}
 			</div>
 			{isCardFormOpen && (
 				<CardForm
 					onSave={handleCreateCard}
 					onCancel={() => setIsCardFormOpen(false)}
+					categories={categories}
+				/>
+			)}
+			{isCategoryFormOpen && (
+				<CategoryForm
+					onSave={handleCreateCategory}
+					onCancel={() => setIsCategoryFormOpen(false)}
 				/>
 			)}
 			{loadingCards && <p>Загрузка карточек...</p>}
-			{!isCardFormOpen && (
+			{!isCardFormOpen && !isCategoryFormOpen && (
 				<CardList cards={cards} onEnterCard={handleEnterCard} />
 			)}
 		</div>

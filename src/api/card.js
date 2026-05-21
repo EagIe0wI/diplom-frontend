@@ -1,19 +1,21 @@
 import api from './axios';
 
 export const cardAPI = {
-	getAll: async (search = '') => {
-		let url = '/cards/cards/';
-		if (search) {
-			url += `?search=${encodeURIComponent(search)}`;
-		}
-		const response = await api.get(url);
+	getAll: async (search = '', categoryId = '') => {
+		const response = await api.get('/cards/cards/', {
+			params: {
+				search: search || undefined,
+				category: categoryId || undefined,
+			},
+		});
 		return response.data;
 	},
 
-	create: async (title, description = '') => {
+	create: async (title, description = '', categoryId = null) => {
 		const response = await api.post('/cards/create/', {
 			title,
 			description,
+			category: categoryId === '' ? null : categoryId,
 		});
 		return response.data;
 	},

@@ -7,6 +7,7 @@ import CardForm from './CardForm';
 
 function Card({
 	tasks,
+	categories,
 	loadingTasks,
 	onAddTask,
 	onSearchTasks,
@@ -74,6 +75,7 @@ function Card({
 		return (
 			<CardForm
 				card={activeCard}
+				categories={categories}
 				onSave={handleCardUpdateSave}
 				onCancel={() => setIsEditingCard(false)}
 			/>
@@ -83,7 +85,9 @@ function Card({
 	return (
 		<div>
 			<button onClick={onLeave}>вернуться к карточкам</button>
-			<h2>{activeCard.title || activeCard.name}</h2>
+			<h2>{activeCard.title}</h2>
+			<p>Категория: {activeCard.categorie}</p>
+			<p>Описание: {activeCard.description}</p>
 
 			<div>
 				<TaskFilter onSearchChange={onSearchTasks} />
