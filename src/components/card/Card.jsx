@@ -85,13 +85,6 @@ function Card({
 			<button onClick={onLeave}>вернуться к карточкам</button>
 			<h2>{activeCard.title || activeCard.name}</h2>
 
-			<button onClick={() => setIsEditingCard(true)}>
-				редактировать эту карточку
-			</button>
-			<button onClick={handleDeleteCardClick}>
-				удалить эту карточку
-			</button>
-
 			<div>
 				<TaskFilter onSearchChange={onSearchTasks} />
 				{!isFormOpen && (
@@ -117,6 +110,13 @@ function Card({
 			) : (
 				!loadingTasks && <p>Задач нет</p>
 			)}
+
+			<button onClick={() => setIsEditingCard(true)}>
+				редактировать эту карточку
+			</button>
+			<button onClick={handleDeleteCardClick}>
+				удалить эту карточку
+			</button>
 		</div>
 	);
 }

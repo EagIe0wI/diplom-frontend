@@ -40,11 +40,6 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 
 			<h1>{task.title}</h1>
 
-			<button onClick={() => setIsEditing(true)}>
-				редактировать задачу
-			</button>
-			<button onClick={handleDeleteClick}>удалить задачу</button>
-
 			<p>
 				<strong>Описание:</strong> {task.description || 'Нет описания'}
 			</p>
@@ -61,6 +56,11 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 					<strong>Повторение (RRule):</strong> {task.rrule_rule}
 				</p>
 			)}
+
+			<button onClick={() => setIsEditing(true)}>
+				редактировать задачу
+			</button>
+			<button onClick={handleDeleteClick}>удалить задачу</button>
 		</div>
 	);
 }
