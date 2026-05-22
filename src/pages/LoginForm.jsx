@@ -49,21 +49,21 @@ const LoginForm = () => {
 		<form onSubmit={submitForm}>
 			<p>Sign in to continue</p>
 
-			{apiError && <p className="error">{apiError}</p>}
+			{apiError && <p className="login-form-error">{apiError}</p>}
 
 			<input
 				name="username"
 				value={userInput}
 				placeholder="Username"
 				onChange={handleUserInput}
-				className={hasErrors.username ? 'error' : ''}
+				className={hasErrors.username ? 'login-form-error' : ''}
 			/>
 			<input
 				type="password"
 				value={passwordInput}
 				placeholder="Password"
 				onChange={handlePasswordInput}
-				className={hasErrors.password ? 'error' : ''}
+				className={hasErrors.password ? 'login-form-error' : ''}
 			/>
 			<input type="submit" value="Log in" />
 		</form>

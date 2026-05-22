@@ -11,6 +11,9 @@ const CUForm = ({
 	onCancel,
 }) => {
 	const [type, setType] = useState(initialType || '');
+	const [error, setError] = useState(null);
+
+	// Стейты полей
 	const [title, setTitle] = useState(
 		mode === 'update' && initialData ? initialData.title || '' : '',
 	);
@@ -31,17 +34,21 @@ const CUForm = ({
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		setError(null);
 
 		if (!title.trim()) {
-			alert('Название обязательно!');
+			setError('Название обязательно для заполнения!');
 			return;
 		}
 
 		try {
+			// --- КАРТОЧКИ ---
 			if (type === 'card') {
 				if (mode === 'create') {
 					if (!categoryId || categoryId === '') {
-						alert('Ошибка: Выберите категорию!');
+						setError(
+							'Ошибка: Выберите категорию! Карточка не может быть создана без нее.',
+						);
 						return;
 					}
 					const cleanCategoryId = Number(categoryId);
@@ -58,7 +65,10 @@ const CUForm = ({
 					);
 					onSuccess({ action: 'updateCard', data: updatedCard });
 				}
-			} else if (type === 'category') {
+			}
+
+			// --- КАТЕГОРИИ ---
+			else if (type === 'category') {
 				if (mode === 'create') {
 					const newCategory = await categoryAPI.create(
 						title,
@@ -66,12 +76,15 @@ const CUForm = ({
 					);
 					onSuccess({ action: 'createCategory', data: newCategory });
 				}
-			} else if (type === 'task') {
+			}
+
+			// --- ЗАДАЧИ (ТАСКИ) ---
+			else if (type === 'task') {
 				const formattedDate = startDate === '' ? null : startDate;
 
 				if (mode === 'create') {
 					if (!activeCard?.id) {
-						alert('Ошибка: Не выбрана активная карточка!');
+						setError('Ошибка: Не выбрана активная карточка!');
 						return;
 					}
 					const newTask = await taskAPI.create(
@@ -94,36 +107,96 @@ const CUForm = ({
 				}
 			}
 		} catch (err) {
-			console.error('Ошибка API:', err);
-			alert('Произошла ошибка при сохранении данных.');
+			console.error(`Ошибка API (${type} | ${mode}):`, err);
+
+			if (err.response && err.response.data) {
+				const serverError = err.response.data;
+				setError(
+					typeof serverError === 'object'
+						? JSON.stringify(serverError)
+						: serverError,
+				);
+			} else {
+				setError('Произошла сетевая ошибка при сохранении данных.');
+			}
 		}
 	};
 
-	// const modeText = mode === 'create' ? 'Создание' : 'Редактирование';
-	// const typeText =
-	// 	type === 'card'
-	// 		? 'карточки'
-	// 		: type === 'category'
-	// 			? 'категории'
-	// 			: 'задачи';
+	const renderCardFields = () => (
+		<div>
+			<div>
+				<label>Описание карточки: </label>
+				<textarea
+					value={description}
+					onChange={(e) => setDescription(e.target.value)}
+				/>
+			</div>
+			{mode === 'create' && (
+				<div>
+					<label>Категория (Обязательно): </label>
+					<select
+						value={categoryId}
+						onChange={(e) => setCategoryId(e.target.value)}
+						required
+					>
+						<option value="">-- Выберите --</option>
+						{categories.map((cat) => (
+							<option key={cat.id} value={cat.id}>
+								{cat.title}
+							</option>
+						))}
+					</select>
+				</div>
+			)}
+		</div>
+	);
+
+	const renderTaskFields = () => (
+		<div>
+			<div>
+				<label>Описание задачи: </label>
+				<textarea
+					value={description}
+					onChange={(e) => setDescription(e.target.value)}
+				/>
+			</div>
+			<div>
+				<label>Дата начала: </label>
+				<input
+					type="date"
+					value={startDate}
+					onChange={(e) => setStartDate(e.target.value)}
+				/>
+			</div>
+			{mode === 'update' && (
+				<div>
+					<label>Статус: </label>
+					<select
+						value={status}
+						onChange={(e) => setStatus(e.target.value)}
+					>
+						<option value="todo">Todo</option>
+						<option value="in_progress">In Progress</option>
+						<option value="done">Done</option>
+					</select>
+				</div>
+			)}
+		</div>
+	);
 
 	return (
 		<div>
 			{!type && mode === 'create' && (
 				<div>
-					<h3>Что вы хотите создать?</h3>
+					<h3>Что создать?</h3>
 					<select
 						value={type}
 						onChange={(e) => setType(e.target.value)}
 					>
-						<option value="">-- Выберите тип сущности --</option>
+						<option value="">-- Выберите --</option>
 						<option value="card">Карточку</option>
 						<option value="category">Категорию</option>
-						{activeCard && (
-							<option value="task">
-								Задачу в текущей карточке
-							</option>
-						)}
+						{activeCard && <option value="task">Задачу</option>}
 					</select>
 					<button type="button" onClick={onCancel}>
 						Отмена
@@ -132,103 +205,31 @@ const CUForm = ({
 			)}
 
 			{type && (
-				<>
-					<h3>
-						{mode === 'create' ? 'Создание' : 'Редактирование'}{' '}
-						{type === 'card'
-							? 'карточки'
-							: type === 'category'
-								? 'категории'
-								: 'задачи'}
-					</h3>
+				<form onSubmit={handleSubmit}>
+					<h3>{mode === 'create' ? 'Создание' : 'Редактирование'}</h3>
 
-					<form onSubmit={handleSubmit}>
-						<div>
-							<label>Название: </label>
-							<input
-								type="text"
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-								required
-							/>
-						</div>
+					{error && <div className="form-error">{error}</div>}
 
-						{type !== 'category' && (
-							<div>
-								<label>Описание: </label>
-								<textarea
-									value={description}
-									onChange={(e) =>
-										setDescription(e.target.value)
-									}
-								/>
-							</div>
-						)}
+					<div>
+						<label>Название: </label>
+						<input
+							type="text"
+							value={title}
+							onChange={(e) => setTitle(e.target.value)}
+							required
+						/>
+					</div>
 
-						{type === 'card' && mode === 'create' && (
-							<div>
-								<label>Категория (Обязательно): </label>
-								<select
-									value={categoryId}
-									onChange={(e) =>
-										setCategoryId(e.target.value)
-									}
-									required
-								>
-									<option value="">
-										-- Выберите категорию --
-									</option>
-									{categories.map((cat) => (
-										<option key={cat.id} value={cat.id}>
-											{cat.title}
-										</option>
-									))}
-								</select>
-							</div>
-						)}
+					{type === 'card' && renderCardFields()}
+					{type === 'task' && renderTaskFields()}
 
-						{type === 'task' && (
-							<div>
-								<div>
-									<label>Дата начала: </label>
-									<input
-										type="date"
-										value={startDate}
-										onChange={(e) =>
-											setStartDate(e.target.value)
-										}
-									/>
-								</div>
-								{mode === 'update' && (
-									<div>
-										<label>Статус: </label>
-										<select
-											value={status}
-											onChange={(e) =>
-												setStatus(e.target.value)
-											}
-										>
-											<option value="todo">
-												Порядок (Todo)
-											</option>
-											<option value="in_progress">
-												В процессе
-											</option>
-											<option value="done">Готово</option>
-										</select>
-									</div>
-								)}
-							</div>
-						)}
-
-						<div>
-							<button type="submit">Сохранить</button>
-							<button type="button" onClick={onCancel}>
-								Отмена
-							</button>
-						</div>
-					</form>
-				</>
+					<div>
+						<button type="submit">Сохранить</button>
+						<button type="button" onClick={onCancel}>
+							Отмена
+						</button>
+					</div>
+				</form>
 			)}
 		</div>
 	);

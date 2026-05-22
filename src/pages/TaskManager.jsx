@@ -2,17 +2,19 @@ import React from 'react';
 import CardFilter from '../components/card/CardFilter';
 import CategoryFilter from '../components/category/CategoryFilter';
 import CardList from '../components/card/CardList';
-import Card from '../components/card/Card';
+import CardDetail from '../components/card/CardDetail';
+import TaskDetail from '../components/task/TaskDetail'; // ИСПРАВЛЕНИЕ: Добавили пропущенный импорт!
 import CUForm from './CreateUpdateForm';
-import { useTaskManager } from '../hooks/useTaskManager'; // Импортируем наш хук
+import { useTaskManager } from '../hooks/useTaskManager';
 
 const TaskManager = () => {
-	// Забираем всё готовое из хука одной строчкой
 	const {
 		cards,
 		categories,
 		tasks,
 		activeCard,
+		activeTask,
+		setActiveTask, // Теперь хук железно отдаст эту функцию
 		loadingCards,
 		loadingTasks,
 		username,
@@ -29,28 +31,60 @@ const TaskManager = () => {
 		handleFormSuccess,
 	} = useTaskManager();
 
-	// Режим открытой карточки
-	if (activeCard) {
+	if (formConfig) {
 		return (
 			<div>
-				<Card
-					activeCard={activeCard}
-					tasks={tasks}
-					loadingTasks={loadingTasks}
+				<button onClick={() => setFormConfig(null)}>← Отмена</button>
+				<CUForm
+					key={`${formConfig.type}-${formConfig.mode}-${formConfig.initialData?.id || 'new'}`}
+					type={formConfig.type}
+					mode={formConfig.mode}
+					initialData={formConfig.initialData}
 					categories={categories}
-					onLeave={handleLeaveCard}
-					onSearchTasks={handleSearchTasks}
-					onDeleteTask={handleDeleteTask}
-					onDeleteCard={handleDeleteCard}
-					onAddTask={() =>
-						setFormConfig({ type: 'task', mode: 'create' })
-					}
+					activeCard={activeCard}
+					onSuccess={handleFormSuccess}
+					onCancel={() => setFormConfig(null)}
+				/>
+			</div>
+		);
+	}
+
+	if (activeCard && activeTask) {
+		return (
+			<div>
+				<TaskDetail
+					task={activeTask}
+					onLeaveTask={() => setActiveTask(null)}
+					onDeleteTask={async (taskId) => {
+						await handleDeleteTask(taskId);
+						setActiveTask(null);
+					}}
 					onUpdateTask={(taskObj) =>
 						setFormConfig({
 							type: 'task',
 							mode: 'update',
 							initialData: taskObj,
 						})
+					}
+				/>
+			</div>
+		);
+	}
+
+	if (activeCard) {
+		return (
+			<div>
+				<CardDetail
+					tasks={tasks}
+					loadingTasks={loadingTasks}
+					categories={categories}
+					activeCard={activeCard}
+					onLeave={handleLeaveCard}
+					onSearchTasks={handleSearchTasks}
+					onDeleteTask={handleDeleteTask}
+					onDeleteCard={handleDeleteCard}
+					onAddTask={() =>
+						setFormConfig({ type: 'task', mode: 'create' })
 					}
 					onUpdateCard={() =>
 						setFormConfig({
@@ -59,24 +93,12 @@ const TaskManager = () => {
 							initialData: activeCard,
 						})
 					}
+					onEnterTask={(taskObj) => setActiveTask(taskObj)}
 				/>
-				{formConfig && (
-					<CUForm
-						key={`${formConfig.type}-${formConfig.mode}-${formConfig.initialData?.id || 'new'}`}
-						type={formConfig.type}
-						mode={formConfig.mode}
-						initialData={formConfig.initialData}
-						categories={categories}
-						activeCard={activeCard}
-						onSuccess={handleFormSuccess}
-						onCancel={() => setFormConfig(null)}
-					/>
-				)}
 			</div>
 		);
 	}
 
-	// Режим главной страницы
 	return (
 		<div>
 			<header>
@@ -94,35 +116,17 @@ const TaskManager = () => {
 					categories={categories}
 					onCategoryChange={handleCategoryChange}
 				/>
-
-				{!formConfig && (
-					<button
-						onClick={() =>
-							setFormConfig({ type: null, mode: 'create' })
-						}
-					>
-						+ Создать...
-					</button>
-				)}
+				<button
+					onClick={() =>
+						setFormConfig({ type: null, mode: 'create' })
+					}
+				>
+					+ Создать...
+				</button>
 			</div>
 
-			{formConfig && (
-				<CUForm
-					key={`${formConfig.type}-${formConfig.mode}-${formConfig.initialData?.id || 'new'}`}
-					type={formConfig.type}
-					mode={formConfig.mode}
-					initialData={formConfig.initialData}
-					categories={categories}
-					activeCard={activeCard}
-					onSuccess={handleFormSuccess}
-					onCancel={() => setFormConfig(null)}
-				/>
-			)}
-
 			{loadingCards && <p>Загрузка карточек...</p>}
-			{!formConfig && (
-				<CardList cards={cards} onEnterCard={handleEnterCard} />
-			)}
+			<CardList cards={cards} onEnterCard={handleEnterCard} />
 		</div>
 	);
 };

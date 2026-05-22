@@ -7,7 +7,7 @@ export const useTaskManager = () => {
 	const [categories, setCategories] = useState([]);
 	const [tasks, setTasks] = useState([]);
 	const [activeCard, setActiveCard] = useState(null);
-
+	const [activeTask, setActiveTask] = useState(null);
 	const [loadingCards, setLoadingCards] = useState(false);
 	const [loadingTasks, setLoadingTasks] = useState(false);
 	const [currentSearch, setCurrentSearch] = useState('');
@@ -94,6 +94,7 @@ export const useTaskManager = () => {
 
 	const handleLeaveCard = () => {
 		setActiveCard(null);
+		setActiveTask(null);
 		setTasks([]);
 		fetchFilteredCards(currentSearch, currentCategory);
 	};
@@ -127,8 +128,12 @@ export const useTaskManager = () => {
 		} else if (action === 'createCategory')
 			setCategories((prev) => [...prev, data]);
 		else if (action === 'createTask') setTasks((prev) => [...prev, data]);
-		else if (action === 'updateTask')
+		else if (action === 'updateTask') {
 			setTasks((prev) => prev.map((t) => (t.id === data.id ? data : t)));
+			if (activeTask && activeTask.id === data.id) {
+				setActiveTask(data);
+			}
+		}
 		setFormConfig(null);
 	};
 
@@ -137,6 +142,8 @@ export const useTaskManager = () => {
 		categories,
 		tasks,
 		activeCard,
+		activeTask,
+		setActiveTask,
 		loadingCards,
 		loadingTasks,
 		username,
