@@ -12,16 +12,13 @@ function CardDetail({
 	onDeleteCard,
 	onAddTask,
 	onUpdateCard,
-	onEnterTask, // ИСПРАВЛЕНИЕ 1: Теперь мы принимаем этот проп сверху из TaskManager!
+	onEnterTask,
 }) {
 	const [showCardOptions, setShowCardOptions] = useState(false);
 
-	// Находим объект категории по ID из активной карточки
 	const currentCategoryObj = categories.find(
 		(cat) => cat.id === activeCard.category,
 	);
-
-	// ИСПРАВЛЕНИЕ 2: Убрали лишние проверки с activeTask, так как экраны теперь переключает сам TaskManager
 
 	return (
 		<div>

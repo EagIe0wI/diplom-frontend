@@ -4,9 +4,9 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 	const [showTaskOptions, setShowTaskOptions] = useState(false);
 
 	const statusLabels = {
-		todo: 'К выполнению (Todo)',
+		todo: 'Запланировано',
 		in_progress: 'В процессе',
-		done: 'Готово',
+		done: 'Выполнено',
 	};
 
 	return (
@@ -18,7 +18,6 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 					{showTaskOptions ? 'Закрыть меню' : 'Управление задачей'}
 				</button>
 			</header>
-
 			{showTaskOptions && (
 				<div className="task-options-block">
 					<span>Действия с задачей: </span>
@@ -30,11 +29,8 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 					</button>
 				</div>
 			)}
-
 			<hr />
-
 			<h1>{task.title}</h1>
-
 			<p>
 				<strong>Описание:</strong> {task.description || 'Нет описания'}
 			</p>
@@ -45,7 +41,6 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 			<p>
 				<strong>Дата начала:</strong> {task.start_date || 'Не задана'}
 			</p>
-
 			{task.rrule_rule && (
 				<p>
 					<strong>Повторение (RRule):</strong> {task.rrule_rule}

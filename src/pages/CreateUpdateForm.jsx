@@ -168,16 +168,17 @@ const CUForm = ({
 					onChange={(e) => setStartDate(e.target.value)}
 				/>
 			</div>
+
 			{mode === 'update' && (
 				<div>
-					<label>Статус: </label>
+					<label>Статус задачи: </label>
 					<select
 						value={status}
 						onChange={(e) => setStatus(e.target.value)}
 					>
-						<option value="todo">Todo</option>
-						<option value="in_progress">In Progress</option>
-						<option value="done">Done</option>
+						<option value="todo">Запланировано</option>
+						<option value="in_progress">В процессе</option>
+						<option value="done">Выполнено</option>
 					</select>
 				</div>
 			)}

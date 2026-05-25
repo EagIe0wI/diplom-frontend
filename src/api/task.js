@@ -14,6 +14,8 @@ export const taskAPI = {
 		return response.data;
 	},
 
+	getTodayTasks: () => api.get('tasks/tasks/today/').then((res) => res.data),
+
 	create: async (card, title, startDate, description) => {
 		const response = await api.post('/tasks/create/', {
 			title,

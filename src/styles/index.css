@@ -19,7 +19,7 @@ a {
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: blue;
 }
 
 body {
@@ -48,7 +48,7 @@ button {
 }
 
 button:hover {
-  border-color: #646cff;
+  border-color: blue;
 }
 
 button:focus,
@@ -62,9 +62,17 @@ button:focus-visible {
     background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+    color: blue;
   }
   button {
     background-color: #f9f9f9;
   }
+}
+
+.today-alerts-box {
+	background-color: #fff9e6;
+	border: 2px solid #ffcc00;
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
 }

@@ -1,10 +1,9 @@
 import React from 'react';
-import CardFilter from '../components/card/CardFilter';
-import CategoryFilter from '../components/category/CategoryFilter';
-import CardList from '../components/card/CardList';
 import CardDetail from '../components/card/CardDetail';
-import TaskDetail from '../components/task/TaskDetail'; // ИСПРАВЛЕНИЕ: Добавили пропущенный импорт!
+import TaskDetail from '../components/task/TaskDetail';
+import CardDashboard from '../components/card/CardDashboard';
 import CUForm from './CreateUpdateForm';
+import BaseLayout from '../components/BaseLayout';
 import { useTaskManager } from '../hooks/useTaskManager';
 
 const TaskManager = () => {
@@ -14,7 +13,7 @@ const TaskManager = () => {
 		tasks,
 		activeCard,
 		activeTask,
-		setActiveTask, // Теперь хук железно отдаст эту функцию
+		setActiveTask,
 		loadingCards,
 		loadingTasks,
 		username,
@@ -29,12 +28,15 @@ const TaskManager = () => {
 		handleSearchTasks,
 		handleDeleteTask,
 		handleFormSuccess,
+		todayTasks,
+		handleCompleteTodayTask,
+		handlePostponeTodayTask,
+		handleEnterTodayTask,
 	} = useTaskManager();
 
-	if (formConfig) {
-		return (
-			<div>
-				<button onClick={() => setFormConfig(null)}>← Отмена</button>
+	const renderCurrentScreen = () => {
+		if (formConfig) {
+			return (
 				<CUForm
 					key={`${formConfig.type}-${formConfig.mode}-${formConfig.initialData?.id || 'new'}`}
 					type={formConfig.type}
@@ -45,13 +47,11 @@ const TaskManager = () => {
 					onSuccess={handleFormSuccess}
 					onCancel={() => setFormConfig(null)}
 				/>
-			</div>
-		);
-	}
+			);
+		}
 
-	if (activeCard && activeTask) {
-		return (
-			<div>
+		if (activeCard && activeTask) {
+			return (
 				<TaskDetail
 					task={activeTask}
 					onLeaveTask={() => setActiveTask(null)}
@@ -67,13 +67,11 @@ const TaskManager = () => {
 						})
 					}
 				/>
-			</div>
-		);
-	}
+			);
+		}
 
-	if (activeCard) {
-		return (
-			<div>
+		if (activeCard) {
+			return (
 				<CardDetail
 					tasks={tasks}
 					loadingTasks={loadingTasks}
@@ -94,40 +92,35 @@ const TaskManager = () => {
 						})
 					}
 					onEnterTask={(taskObj) => setActiveTask(taskObj)}
+					todayTasks={todayTasks}
+					onCompleteTodayTask={handleCompleteTodayTask}
+					onPostponeTodayTask={handlePostponeTodayTask}
 				/>
-			</div>
+			);
+		}
+
+		return (
+			<CardDashboard
+				key={`dashboard-${todayTasks.length}`}
+				categories={categories}
+				cards={cards}
+				loadingCards={loadingCards}
+				handleSearchCards={handleSearchCards}
+				handleCategoryChange={handleCategoryChange}
+				setFormConfig={setFormConfig}
+				handleEnterCard={handleEnterCard}
+				todayTasks={todayTasks}
+				onCompleteTodayTask={handleCompleteTodayTask}
+				onPostponeTodayTask={handlePostponeTodayTask}
+				onEnterTodayTask={handleEnterTodayTask}
+			/>
 		);
-	}
+	};
 
 	return (
-		<div>
-			<header>
-				<span>
-					Пользователь: <strong>{username}</strong>
-				</span>
-				<button onClick={handleLogout}>Выйти</button>
-			</header>
-
-			<h2>Все карточки</h2>
-
-			<div>
-				<CardFilter onSearchChange={handleSearchCards} />
-				<CategoryFilter
-					categories={categories}
-					onCategoryChange={handleCategoryChange}
-				/>
-				<button
-					onClick={() =>
-						setFormConfig({ type: null, mode: 'create' })
-					}
-				>
-					+ Создать...
-				</button>
-			</div>
-
-			{loadingCards && <p>Загрузка карточек...</p>}
-			<CardList cards={cards} onEnterCard={handleEnterCard} />
-		</div>
+		<BaseLayout username={username} handleLogout={handleLogout}>
+			{renderCurrentScreen()}
+		</BaseLayout>
 	);
 };
 

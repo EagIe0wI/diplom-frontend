@@ -44,7 +44,7 @@
 .card-list-item {
 	cursor: pointer;
 	padding: 8px 0;
-	list-style-type: none; /* Убираем маркеры-точки Ubuntu */
+	list-style-type: none;
 }
 
 .card-list-link {
@@ -53,7 +53,6 @@
 	transition: color 0.2s ease;
 }
 
-/* Эффект наведения на карточку */
 .card-list-item:hover .card-list-link {
 	color: blue;
 	text-decoration: underline;
@@ -73,7 +72,7 @@
 .task-list-item {
 	cursor: pointer;
 	padding: 6px 0;
-	list-style-type: none; /* Убираем маркеры-точки */
+	list-style-type: none;
 }
 
 .task-list-link {
@@ -82,7 +81,6 @@
 	transition: color 0.2s ease;
 }
 
-/* Эффект наведения на задачу */
 .task-list-item:hover .task-list-link {
 	color: blue;
 	text-decoration: underline;
