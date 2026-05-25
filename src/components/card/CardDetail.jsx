@@ -49,7 +49,9 @@ function CardDetail({
 				<strong>Категория:</strong>{' '}
 				{currentCategoryObj
 					? currentCategoryObj.title
-					: `ID ${activeCard.category}`}
+					: activeCard.category
+						? `ID ${activeCard.category}`
+						: 'Без категории'}
 			</p>
 
 			<p>Описание: {activeCard.description}</p>

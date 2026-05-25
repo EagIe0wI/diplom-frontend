@@ -6,50 +6,72 @@ export const useTaskManager = () => {
 	const [cards, setCards] = useState([]);
 	const [categories, setCategories] = useState([]);
 	const [tasks, setTasks] = useState([]);
+	const [todayTasks, setTodayTasks] = useState([]);
+	const [allTasks, setAllTasks] = useState([]);
+
+	const [currentTab, setCurrentTab] = useState('cards');
+	const [sortBy, setSortBy] = useState('card');
+
 	const [activeCard, setActiveCard] = useState(null);
 	const [activeTask, setActiveTask] = useState(null);
+
 	const [loadingCards, setLoadingCards] = useState(false);
 	const [loadingTasks, setLoadingTasks] = useState(false);
 	const [currentSearch, setCurrentSearch] = useState('');
 	const [currentCategory, setCurrentCategory] = useState('');
 	const [username, setUsername] = useState('');
 	const [formConfig, setFormConfig] = useState(null);
-	const [todayTasks, setTodayTasks] = useState([]);
 
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		setLoadingCards(true);
-
 		Promise.all([
 			cardAPI.getAll(),
 			categoryAPI.getAll(),
 			getUserMeAPI(),
 			taskAPI.getTodayTasks(),
+			taskAPI.getAll(),
 		])
-			.then(([cardsData, categoryData, userData, todayTasksData]) => {
-				const actualCards =
-					cardsData.results || cardsData.cards || cardsData;
-				const actualCategories =
-					categoryData.results ||
-					categoryData.categories ||
-					categoryData;
+			.then(
+				([
+					cardsData,
+					categoryData,
+					userData,
+					todayTasksData,
+					allTasksData,
+				]) => {
+					const actualCards =
+						cardsData.results || cardsData.cards || cardsData;
+					const actualCategories =
+						categoryData.results ||
+						categoryData.categories ||
+						categoryData;
 
-				setCards(Array.isArray(actualCards) ? actualCards : []);
-				setCategories(
-					Array.isArray(actualCategories) ? actualCategories : [],
-				);
-				setUsername(userData.username);
-				const actualTodayTasks =
-					todayTasksData?.results ||
-					todayTasksData?.tasks ||
-					todayTasksData;
-				setTodayTasks(
-					Array.isArray(actualTodayTasks) ? actualTodayTasks : [],
-				);
-			})
+					setCards(Array.isArray(actualCards) ? actualCards : []);
+					setCategories(
+						Array.isArray(actualCategories) ? actualCategories : [],
+					);
+					setUsername(userData.username);
 
-			.catch((err) => console.error('Ошибка планировщика:', err))
+					const actualTodayTasks =
+						todayTasksData?.results ||
+						todayTasksData?.tasks ||
+						todayTasksData;
+					setTodayTasks(
+						Array.isArray(actualTodayTasks) ? actualTodayTasks : [],
+					);
+
+					const actualAllTasks =
+						allTasksData.results ||
+						allTasksData.tasks ||
+						allTasksData;
+					setAllTasks(
+						Array.isArray(actualAllTasks) ? actualAllTasks : [],
+					);
+				},
+			)
+			.catch((err) => console.error('Ошибка инициализации данных:', err))
 			.finally(() => setLoadingCards(false));
 	}, []);
 
@@ -72,7 +94,7 @@ export const useTaskManager = () => {
 		}
 	};
 
-	const handleSearchCards = (searchText) => {
+	const handleSearchCards = async (searchText) => {
 		setCurrentSearch(searchText);
 		fetchFilteredCards(searchText, currentCategory);
 	};
@@ -82,11 +104,29 @@ export const useTaskManager = () => {
 		fetchFilteredCards(currentSearch, categoryId);
 	};
 
+	const handleDeleteCategory = async (categoryId) => {
+		if (
+			!confirm(
+				'Вы уверены? Удаление категории может повлечь за собой удаление связанных карточек на бэкенде!',
+			)
+		)
+			return;
+		try {
+			await categoryAPI.delete(categoryId);
+			setCategories((prev) =>
+				prev.filter((cat) => cat.id !== categoryId),
+			);
+		} catch (err) {
+			console.error('Ошибка при удалении категории:', err);
+		}
+	};
+
 	const handleDeleteCard = async (cardId) => {
 		if (!confirm('Удалить карточку?')) return;
 		try {
 			await cardAPI.delete(cardId);
 			setCards((prev) => prev.filter((c) => c.id !== cardId));
+			setAllTasks((prev) => prev.filter((t) => t.card !== cardId));
 			setActiveCard(null);
 			setTasks([]);
 		} catch (err) {
@@ -111,8 +151,14 @@ export const useTaskManager = () => {
 	const handleLeaveCard = () => {
 		setActiveCard(null);
 		setActiveTask(null);
-		setTasks([]);
-		fetchFilteredCards(currentSearch, currentCategory);
+		setCurrentSearch('');
+		setCurrentCategory('');
+
+		taskAPI.getAll().then((data) => {
+			const actualAllTasks = data.results || data.tasks || data;
+			setAllTasks(Array.isArray(actualAllTasks) ? actualAllTasks : []);
+		});
+		fetchFilteredCards('', '');
 	};
 
 	const handleSearchTasks = async (searchText) => {
@@ -131,21 +177,33 @@ export const useTaskManager = () => {
 		try {
 			await taskAPI.delete(taskId);
 			setTasks((prev) => prev.filter((t) => t.id !== taskId));
+			setAllTasks((prev) => prev.filter((t) => t.id !== taskId));
+			setTodayTasks((prev) => prev.filter((t) => t.id !== taskId));
 		} catch (err) {
 			console.error('Ошибка при удалении задачки:', err);
 		}
 	};
 
 	const handleFormSuccess = ({ action, data }) => {
-		if (action === 'createCard') setCards((prev) => [...prev, data]);
-		else if (action === 'updateCard') {
+		if (action === 'createCard') {
+			setCards((prev) => [...prev, data]);
+		} else if (action === 'updateCard') {
 			setCards((prev) => prev.map((c) => (c.id === data.id ? data : c)));
 			setActiveCard(data);
-		} else if (action === 'createCategory')
+		} else if (action === 'createCategory') {
 			setCategories((prev) => [...prev, data]);
-		else if (action === 'createTask') setTasks((prev) => [...prev, data]);
-		else if (action === 'updateTask') {
+		} else if (action === 'updateCategory') {
+			setCategories((prev) =>
+				prev.map((cat) => (cat.id === data.id ? data : cat)),
+			);
+		} else if (action === 'createTask') {
+			setTasks((prev) => [...prev, data]);
+			setAllTasks((prev) => [...prev, data]);
+		} else if (action === 'updateTask') {
 			setTasks((prev) => prev.map((t) => (t.id === data.id ? data : t)));
+			setAllTasks((prev) =>
+				prev.map((t) => (t.id === data.id ? data : t)),
+			);
 			setTodayTasks((prev) =>
 				prev.map((t) => (t.id === data.id ? data : t)),
 			);
@@ -166,9 +224,13 @@ export const useTaskManager = () => {
 				task.card,
 				task.description,
 			);
-
 			setTodayTasks((prev) => prev.filter((t) => t.id !== task.id));
 			setTasks((prev) =>
+				prev.map((t) =>
+					t.id === task.id ? { ...t, status: 'done' } : t,
+				),
+			);
+			setAllTasks((prev) =>
 				prev.map((t) =>
 					t.id === task.id ? { ...t, status: 'done' } : t,
 				),
@@ -197,6 +259,11 @@ export const useTaskManager = () => {
 					t.id === task.id ? { ...t, start_date: tomorrowStr } : t,
 				),
 			);
+			setAllTasks((prev) =>
+				prev.map((t) =>
+					t.id === task.id ? { ...t, start_date: tomorrowStr } : t,
+				),
+			);
 		} catch (err) {
 			console.error('Ошибка при переносе задачи на завтра:', err);
 		}
@@ -204,7 +271,6 @@ export const useTaskManager = () => {
 
 	const handleEnterTodayTask = async (task) => {
 		const parentCard = cards.find((c) => c.id === task.card);
-
 		if (parentCard) {
 			setActiveCard(parentCard);
 			setLoadingTasks(true);
@@ -226,6 +292,11 @@ export const useTaskManager = () => {
 		cards,
 		categories,
 		tasks,
+		allTasks,
+		currentTab,
+		setCurrentTab,
+		sortBy,
+		setSortBy,
 		activeCard,
 		activeTask,
 		setActiveTask,
@@ -237,6 +308,7 @@ export const useTaskManager = () => {
 		handleLogout,
 		handleSearchCards,
 		handleCategoryChange,
+		handleDeleteCategory,
 		handleDeleteCard,
 		handleEnterCard,
 		handleLeaveCard,

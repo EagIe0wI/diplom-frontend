@@ -13,7 +13,6 @@ const CUForm = ({
 	const [type, setType] = useState(initialType || '');
 	const [error, setError] = useState(null);
 
-	// Стейты полей
 	const [title, setTitle] = useState(
 		mode === 'update' && initialData ? initialData.title || '' : '',
 	);
@@ -42,16 +41,10 @@ const CUForm = ({
 		}
 
 		try {
-			// --- КАРТОЧКИ ---
 			if (type === 'card') {
 				if (mode === 'create') {
-					if (!categoryId || categoryId === '') {
-						setError(
-							'Ошибка: Выберите категорию! Карточка не может быть создана без нее.',
-						);
-						return;
-					}
-					const cleanCategoryId = Number(categoryId);
+					const cleanCategoryId =
+						categoryId !== '' ? Number(categoryId) : null;
 					const newCard = await cardAPI.create(
 						title,
 						description,
@@ -65,21 +58,25 @@ const CUForm = ({
 					);
 					onSuccess({ action: 'updateCard', data: updatedCard });
 				}
-			}
-
-			// --- КАТЕГОРИИ ---
-			else if (type === 'category') {
+			} else if (type === 'category') {
 				if (mode === 'create') {
 					const newCategory = await categoryAPI.create(
 						title,
 						description,
 					);
 					onSuccess({ action: 'createCategory', data: newCategory });
+				} else if (mode === 'update') {
+					const updatedCategory = await categoryAPI.update(
+						initialData.id,
+						title,
+						description,
+					);
+					onSuccess({
+						action: 'updateCategory',
+						data: updatedCategory,
+					});
 				}
-			}
-
-			// --- ЗАДАЧИ (ТАСКИ) ---
-			else if (type === 'task') {
+			} else if (type === 'task') {
 				const formattedDate = startDate === '' ? null : startDate;
 
 				if (mode === 'create') {
@@ -133,13 +130,12 @@ const CUForm = ({
 			</div>
 			{mode === 'create' && (
 				<div>
-					<label>Категория (Обязательно): </label>
+					<label>Категория (Опционально): </label>
 					<select
 						value={categoryId}
 						onChange={(e) => setCategoryId(e.target.value)}
-						required
 					>
-						<option value="">-- Выберите --</option>
+						<option value="">-- Без категории --</option>
 						{categories.map((cat) => (
 							<option key={cat.id} value={cat.id}>
 								{cat.title}

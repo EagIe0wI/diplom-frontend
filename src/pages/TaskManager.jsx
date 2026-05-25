@@ -1,7 +1,12 @@
 import React from 'react';
+import CardFilter from '../components/card/CardFilter';
+import CategoryFilter from '../components/category/CategoryFilter';
+import CardList from '../components/card/CardList';
 import CardDetail from '../components/card/CardDetail';
+import TaskList from '../components/task/TaskList';
 import TaskDetail from '../components/task/TaskDetail';
-import CardDashboard from '../components/card/CardDashboard';
+import TodayTaskBanner from '../components/task/TodayTasksBanner';
+import CategoryList from '../components/category/CategoryList';
 import CUForm from './CreateUpdateForm';
 import BaseLayout from '../components/BaseLayout';
 import { useTaskManager } from '../hooks/useTaskManager';
@@ -11,6 +16,9 @@ const TaskManager = () => {
 		cards,
 		categories,
 		tasks,
+		allTasks,
+		currentTab,
+		setCurrentTab,
 		activeCard,
 		activeTask,
 		setActiveTask,
@@ -22,6 +30,7 @@ const TaskManager = () => {
 		handleLogout,
 		handleSearchCards,
 		handleCategoryChange,
+		handleDeleteCategory,
 		handleDeleteCard,
 		handleEnterCard,
 		handleLeaveCard,
@@ -33,6 +42,13 @@ const TaskManager = () => {
 		handlePostponeTodayTask,
 		handleEnterTodayTask,
 	} = useTaskManager();
+
+	const groupedTasks = allTasks.reduce((acc, task) => {
+		const cardId = task.card;
+		if (!acc[cardId]) acc[cardId] = [];
+		acc[cardId].push(task);
+		return acc;
+	}, {});
 
 	const renderCurrentScreen = () => {
 		if (formConfig) {
@@ -92,28 +108,95 @@ const TaskManager = () => {
 						})
 					}
 					onEnterTask={(taskObj) => setActiveTask(taskObj)}
-					todayTasks={todayTasks}
-					onCompleteTodayTask={handleCompleteTodayTask}
-					onPostponeTodayTask={handlePostponeTodayTask}
 				/>
 			);
 		}
 
 		return (
-			<CardDashboard
-				key={`dashboard-${todayTasks.length}`}
-				categories={categories}
-				cards={cards}
-				loadingCards={loadingCards}
-				handleSearchCards={handleSearchCards}
-				handleCategoryChange={handleCategoryChange}
-				setFormConfig={setFormConfig}
-				handleEnterCard={handleEnterCard}
-				todayTasks={todayTasks}
-				onCompleteTodayTask={handleCompleteTodayTask}
-				onPostponeTodayTask={handlePostponeTodayTask}
-				onEnterTodayTask={handleEnterTodayTask}
-			/>
+			<div>
+				<nav>
+					<button
+						onClick={() => setCurrentTab('cards')}
+						disabled={currentTab === 'cards'}
+					>
+						Карточки
+					</button>
+					<button
+						onClick={() => setCurrentTab('tasks')}
+						disabled={currentTab === 'tasks'}
+					>
+						Все задачи
+					</button>
+					<button
+						onClick={() => setCurrentTab('categories')}
+						disabled={currentTab === 'categories'}
+					>
+						Категории
+					</button>
+				</nav>
+				<hr />
+
+				<TodayTaskBanner
+					todayTasks={todayTasks}
+					onEnterTodayTask={handleEnterTodayTask}
+					onCompleteTodayTask={handleCompleteTodayTask}
+					onPostponeTodayTask={handlePostponeTodayTask}
+				/>
+
+				{currentTab === 'cards' && (
+					<div>
+						<div>
+							<CardFilter onSearchChange={handleSearchCards} />
+							<CategoryFilter
+								categories={categories}
+								onCategoryChange={handleCategoryChange}
+							/>
+							<button
+								onClick={() =>
+									setFormConfig({
+										type: null,
+										mode: 'create',
+									})
+								}
+							>
+								Создать карточку
+							</button>
+						</div>
+						{loadingCards && <p>Загрузка карточек...</p>}
+						<CardList cards={cards} onEnterCard={handleEnterCard} />
+					</div>
+				)}
+
+				{currentTab === 'tasks' && (
+					<div>
+						{Object.keys(groupedTasks).map((cardId) => {
+							const parentCard = cards.find(
+								(c) => c.id === Number(cardId),
+							);
+							const cardTitle = parentCard
+								? parentCard.title
+								: `Карточка (ID: ${cardId})`;
+							return (
+								<div key={cardId}>
+									<h3>{cardTitle}</h3>
+									<TaskList
+										tasks={groupedTasks[cardId]}
+										onEnterTask={handleEnterTodayTask}
+									/>
+								</div>
+							);
+						})}
+					</div>
+				)}
+
+				{currentTab === 'categories' && (
+					<CategoryList
+						categories={categories}
+						setFormConfig={setFormConfig}
+						onDeleteCategory={handleDeleteCategory}
+					/>
+				)}
+			</div>
 		);
 	};
 
