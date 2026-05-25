@@ -1,24 +1,11 @@
 import React from 'react';
-import '/src/styles/CardList.css';
+import CardItem from './CardItem';
 
 function CardList({ cards, onEnterCard }) {
 	return (
-		<ul>
+		<ul className="card-list">
 			{cards.map((card) => (
-				<li
-					key={card.id}
-					className="card-list-item"
-					onClick={() => onEnterCard(card)}
-				>
-					<span className="card-list-link">
-						{card.title || card.name} ➔
-					</span>
-
-					<div>
-						Задач внутри:{' '}
-						{card.tasks_count !== undefined ? card.tasks_count : 0}
-					</div>
-				</li>
+				<CardItem key={card.id} card={card} onEnterCard={onEnterCard} />
 			))}
 		</ul>
 	);

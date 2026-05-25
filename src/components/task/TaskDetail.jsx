@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import TaskForm from './TaskForm';
 
 function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
-	const [isEditing, setIsEditing] = useState(false);
+	const [showTaskOptions, setShowTaskOptions] = useState(false);
 
 	const statusLabels = {
 		todo: 'К выполнению (Todo)',
@@ -10,33 +9,29 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 		done: 'Готово',
 	};
 
-	const handleDeleteClick = () => {
-		const isConfirmed = window.confirm(
-			`Вы уверены, что хотите удалить задачу "${task.title}"?`,
-		);
-		if (isConfirmed) {
-			onDeleteTask(task.id);
-		}
-	};
-
-	const handleUpdateSave = async (title, description, startDate) => {
-		await onUpdateTask(task.id, title, description, startDate, task.status);
-		setIsEditing(false);
-	};
-
-	if (isEditing) {
-		return (
-			<TaskForm
-				task={task}
-				onSave={handleUpdateSave}
-				onCancel={() => setIsEditing(false)}
-			/>
-		);
-	}
-
 	return (
 		<div>
-			<button onClick={onLeaveTask}>вернуться к задачам</button>
+			<header className="task-navigation-header">
+				<button onClick={onLeaveTask}>Назад к задачам</button>
+				{' | '}
+				<button onClick={() => setShowTaskOptions(!showTaskOptions)}>
+					{showTaskOptions ? 'Закрыть меню' : 'Управление задачей'}
+				</button>
+			</header>
+
+			{showTaskOptions && (
+				<div className="task-options-block">
+					<span>Действия с задачей: </span>
+					<button onClick={() => onUpdateTask(task)}>
+						Редактировать задачу
+					</button>
+					<button onClick={() => onDeleteTask(task.id)}>
+						Удалить задачу
+					</button>
+				</div>
+			)}
+
+			<hr />
 
 			<h1>{task.title}</h1>
 
@@ -56,11 +51,6 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 					<strong>Повторение (RRule):</strong> {task.rrule_rule}
 				</p>
 			)}
-
-			<button onClick={() => setIsEditing(true)}>
-				редактировать задачу
-			</button>
-			<button onClick={handleDeleteClick}>удалить задачу</button>
 		</div>
 	);
 }

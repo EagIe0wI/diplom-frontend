@@ -1,5 +1,10 @@
 import api from './axios';
 
+export const refreshTokenAPI = async (refresh) => {
+	const response = await api.post('/accounts/token/refresh/', { refresh });
+	return response.data;
+};
+
 api.interceptors.request.use((config) => {
 	const token = localStorage.getItem('access_token');
 	const isAuthRequest =

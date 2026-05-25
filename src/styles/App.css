@@ -1,3 +1,4 @@
+/* ==================== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРОВ ==================== */
 .task-manager-container {
 	width: 100%;
 	max-width: 800px;
@@ -6,42 +7,83 @@
 	font-family: sans-serif;
 }
 
-.cards-grid {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 15px;
-	margin-top: 20px;
-}
-
-.card-item {
-	padding: 15px;
-	border: 1px solid #aaa;
-	border-radius: 8px;
-	cursor: pointer;
-	position: relative;
-}
-
-.card-item:hover {
-	background-color: gray
-}
-
-.delete-card-btn {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	color: red;
-	border: none;
-	background: none;
-	cursor: pointer;
-}
-
-.card-form input, .back-btn {
-	padding: 8px;
-	margin-right: 10px;
-}
-
 .loading-state {
 	padding: 40px;
 	text-align: center;
 	font-size: 18px;
+}
+
+/* ==================== ФОРМЫ И ОШИБКИ (CUForm / Логин) ==================== */
+.form-error {
+	color: red;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+.login-form-error {
+    color: red;
+    font-size: 14px;
+}
+
+.back-btn {
+	padding: 8px;
+	margin-right: 10px;
+}
+
+/* ==================== СЕКЦИЯ КАРТОЧЕК (CardList / CardDetail) ==================== */
+.card-navigation-header {
+	margin-bottom: 10px;
+}
+
+.card-options-block {
+	border: 1px dashed #757575;
+	padding: 5px;
+	margin: 10px 0;
+}
+
+.card-list-item {
+	cursor: pointer;
+	padding: 8px 0;
+	list-style-type: none; /* Убираем маркеры-точки Ubuntu */
+}
+
+.card-list-link {
+	color: #000000;
+	font-weight: 500;
+	transition: color 0.2s ease;
+}
+
+/* Эффект наведения на карточку */
+.card-list-item:hover .card-list-link {
+	color: blue;
+	text-decoration: underline;
+}
+
+/* ==================== СЕКЦИЯ ЗАДАЧ (TaskList / TaskDetail) ==================== */
+.task-navigation-header {
+	margin-bottom: 10px;
+}
+
+.task-options-block {
+	border: 1px dashed #757575;
+	padding: 5px;
+	margin: 10px 0;
+}
+
+.task-list-item {
+	cursor: pointer;
+	padding: 6px 0;
+	list-style-type: none; /* Убираем маркеры-точки */
+}
+
+.task-list-link {
+	color: #000000;
+	font-weight: 500;
+	transition: color 0.2s ease;
+}
+
+/* Эффект наведения на задачу */
+.task-list-item:hover .task-list-link {
+	color: blue;
+	text-decoration: underline;
 }

@@ -1,12 +1,11 @@
 import React from 'react';
-import Task from './Task';
-import '/src/styles/TaskList.css';
+import TaskItem from './TaskItem';
 
 function TaskList({ tasks, onEnterTask }) {
 	return (
 		<ul>
 			{tasks.map((task) => (
-				<Task key={task.id} task={task} onEnterTask={onEnterTask} />
+				<TaskItem key={task.id} task={task} onEnterTask={onEnterTask} />
 			))}
 		</ul>
 	);
