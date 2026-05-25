@@ -24,19 +24,99 @@ api.interceptors.request.use(
 	},
 );
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+	failedQueue.forEach((prom) => {
+		if (error) {
+			prom.reject(error);
+		} else {
+			prom.resolve(token);
+		}
+	});
+	failedQueue = [];
+};
+
 api.interceptors.response.use(
 	(response) => {
 		return response;
 	},
-	(error) => {
-		if (error.response && error.response.status === 401) {
-			console.warn(
-				'Сессия устарела (401). Очистка токенов и редирект...',
-			);
-			localStorage.removeItem('access_token');
-			localStorage.removeItem('refresh_token');
-			window.location.href = '/login';
+	async (error) => {
+		const originalRequest = error.config;
+
+		if (
+			error.response &&
+			error.response.status === 401 &&
+			!originalRequest._retry
+		) {
+			// ЗАЩИТА: Если 401 прилетел от самого запроса обновления токена,
+			// убираем слэш из проверки, чтобы метод .includes отработал корректно
+			if (originalRequest.url.includes('accounts/token/refresh')) {
+				localStorage.removeItem('access_token');
+				localStorage.removeItem('refresh_token');
+				window.location.href = '/login';
+				return Promise.reject(error);
+			}
+
+			if (isRefreshing) {
+				return new Promise((resolve, reject) => {
+					failedQueue.push({ resolve, reject });
+				})
+					.then((token) => {
+						originalRequest.headers.Authorization = `Bearer ${token}`;
+						return api(originalRequest);
+					})
+					.catch((err) => {
+						return Promise.reject(err);
+					});
+			}
+
+			originalRequest._retry = true;
+			isRefreshing = true;
+
+			const refreshToken = localStorage.getItem('refresh_token');
+
+			if (refreshToken) {
+				try {
+					// ИСПРАВЛЕНИЕ: Убираем первый слэш! Было '/accounts/...', стало 'accounts/...'
+					// Теперь Axios склеит baseURL и этот путь без двойного //
+					const response = await api.post('accounts/token/refresh/', {
+						refresh: refreshToken,
+					});
+
+					const newAccessToken = response.data.access;
+					localStorage.setItem('access_token', newAccessToken);
+
+					if (response.data.refresh) {
+						localStorage.setItem(
+							'refresh_token',
+							response.data.refresh,
+						);
+					}
+
+					api.defaults.headers.common['Authorization'] =
+						`Bearer ${newAccessToken}`;
+					originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+					processQueue(null, newAccessToken);
+					return api(originalRequest);
+				} catch (refreshError) {
+					processQueue(refreshError, null);
+					console.error(
+						'Не удалось обновить токен сессии:',
+						refreshError,
+					);
+					localStorage.removeItem('access_token');
+					localStorage.removeItem('refresh_token');
+					window.location.href = '/login';
+					return Promise.reject(refreshError);
+				} finally {
+					isRefreshing = false;
+				}
+			}
 		}
+
 		return Promise.reject(error);
 	},
 );

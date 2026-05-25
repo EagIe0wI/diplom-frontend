@@ -1,6 +1,5 @@
 import React from 'react';
 import TaskItem from './TaskItem';
-import '/src/styles/TaskList.css';
 
 function TaskList({ tasks, onEnterTask }) {
 	return (

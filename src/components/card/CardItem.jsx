@@ -1,9 +1,10 @@
 import React from 'react';
+import styles from '../../styles/CardItem.module.css';
 
 function CardItem({ card, onEnterCard }) {
 	return (
-		<li className="card-list-item" onClick={() => onEnterCard(card)}>
-			<span className="card-list-link">{card.title} ...</span>
+		<li className={styles.item} onClick={() => onEnterCard(card)}>
+			<span className={styles.link}>{card.title} ...</span>
 		</li>
 	);
 }

@@ -1,9 +1,10 @@
 import React from 'react';
+import styles from '../../styles/TaskItem.module.css';
 
 function TaskItem({ task, onEnterTask }) {
 	return (
-		<li className="task-list-item" onClick={() => onEnterTask(task)}>
-			<span className="task-list-link">{task.title} ...</span>
+		<li className={styles.item} onClick={() => onEnterTask(task)}>
+			<span className={styles.link}>{task.title} ...</span>
 		</li>
 	);
 }
