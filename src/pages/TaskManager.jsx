@@ -5,7 +5,8 @@ import CardList from '../components/card/CardList';
 import CardDetail from '../components/card/CardDetail';
 import TaskList from '../components/task/TaskList';
 import TaskDetail from '../components/task/TaskDetail';
-import TodayTaskBanner from '../components/task/TodayTasksBanner';
+import TodayTasksbanner from '../components/task/TodayTasksBanner';
+import OverdueTasksBanner from '../components/task/OverdueTasksBanner';
 import CategoryList from '../components/category/CategoryList';
 import CUForm from './CreateUpdateForm';
 import BaseLayout from '../components/BaseLayout';
@@ -41,6 +42,7 @@ const TaskManager = () => {
 		handleCompleteTodayTask,
 		handlePostponeTodayTask,
 		handleEnterTodayTask,
+		overdueTasks,
 	} = useTaskManager();
 
 	const groupedTasks = allTasks.reduce((acc, task) => {
@@ -136,8 +138,17 @@ const TaskManager = () => {
 				</nav>
 				<hr />
 
-				<TodayTaskBanner
-					todayTasks={todayTasks}
+				<TodayTasksbanner
+					todayTasks={todayTasks.filter(
+						(tt) => !overdueTasks.some((ot) => ot.id === tt.id),
+					)}
+					onEnterTodayTask={handleEnterTodayTask}
+					onCompleteTodayTask={handleCompleteTodayTask}
+					onPostponeTodayTask={handlePostponeTodayTask}
+				/>
+
+				<OverdueTasksBanner
+					overdueTasks={overdueTasks}
 					onEnterTodayTask={handleEnterTodayTask}
 					onCompleteTodayTask={handleCompleteTodayTask}
 					onPostponeTodayTask={handlePostponeTodayTask}

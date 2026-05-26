@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import TaskManager from './pages/TaskManager';
 import LoginForm from './pages/LoginForm';
 import RegisterForm from './pages/RegisterForm';
+import '../src/styles/App.css';
 
 const ProtectedRoute = ({ children }) => {
 	const token = localStorage.getItem('token');

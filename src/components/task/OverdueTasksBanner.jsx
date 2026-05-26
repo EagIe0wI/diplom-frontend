@@ -1,20 +1,20 @@
 import React from 'react';
 
-function TodayTaskBanner({
-	todayTasks,
+function OverdueTasksBanner({
+	overdueTasks,
 	onEnterTodayTask,
 	onCompleteTodayTask,
 	onPostponeTodayTask,
 }) {
-	if (!todayTasks || todayTasks.length === 0) {
+	if (!overdueTasks || overdueTasks.length === 0) {
 		return null;
 	}
 
 	return (
-		<div className="today-banner-block">
-			<h3>Необходимо выполнить сегодня ({todayTasks.length}):</h3>
+		<div className="overdue-banner-block">
+			<h3>Просроченные задачи ({overdueTasks.length}):</h3>
 			<ul>
-				{todayTasks.map((task) => (
+				{overdueTasks.map((task) => (
 					<li key={task.id} className="task-list-item">
 						<span
 							className="task-list-link"
@@ -23,13 +23,13 @@ function TodayTaskBanner({
 						>
 							{task.title} ...
 						</span>
-						{task.description && ` (${task.description})`}
+						{task.start_date && ` (Срок: ${task.start_date})`}
 						{' | '}
 						<button onClick={() => onCompleteTodayTask(task)}>
 							Выполнено
 						</button>
 						<button onClick={() => onPostponeTodayTask(task)}>
-							Отложить
+							Перенести на завтра
 						</button>
 					</li>
 				))}
@@ -39,4 +39,4 @@ function TodayTaskBanner({
 	);
 }
 
-export default TodayTaskBanner;
+export default OverdueTasksBanner;

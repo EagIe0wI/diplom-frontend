@@ -1,4 +1,4 @@
-/* ==================== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРОВ ==================== */
+/* ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРОВ ===== */
 .task-manager-container {
 	width: 100%;
 	max-width: 800px;
@@ -13,7 +13,7 @@
 	font-size: 18px;
 }
 
-/* ==================== ФОРМЫ И ОШИБКИ (CUForm / Логин) ==================== */
+/* ===== ФОРМЫ И ОШИБКИ (CUForm / Логин) ====== */
 .form-error {
 	color: red;
 	font-weight: bold;
@@ -30,7 +30,7 @@
 	margin-right: 10px;
 }
 
-/* ==================== СЕКЦИЯ КАРТОЧЕК (CardList / CardDetail) ==================== */
+/* ===== СЕКЦИЯ КАРТОЧЕК (CardList / CardDetail) ===== */
 .card-navigation-header {
 	margin-bottom: 10px;
 }
@@ -58,7 +58,7 @@
 	text-decoration: underline;
 }
 
-/* ==================== СЕКЦИЯ ЗАДАЧ (TaskList / TaskDetail) ==================== */
+/* ===== СЕКЦИЯ ЗАДАЧ (TaskList / TaskDetail) ===== */
 .task-navigation-header {
 	margin-bottom: 10px;
 }
@@ -84,4 +84,19 @@
 .task-list-item:hover .task-list-link {
 	color: blue;
 	text-decoration: underline;
+}
+
+.today-banner-block {
+	background-color: beige;
+	border: 2px solid orange;
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+}
+
+.overdue-banner-block {
+	background-color: pink;
+	border: 2px dashed red;
+	padding: 5px;
+	margin: 10px 0;
 }

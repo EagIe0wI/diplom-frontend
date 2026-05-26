@@ -6,8 +6,9 @@ export const useTaskManager = () => {
 	const [cards, setCards] = useState([]);
 	const [categories, setCategories] = useState([]);
 	const [tasks, setTasks] = useState([]);
-	const [todayTasks, setTodayTasks] = useState([]);
 	const [allTasks, setAllTasks] = useState([]);
+	const [todayTasks, setTodayTasks] = useState([]);
+	const [overdueTasks, setOverdueTasks] = useState([]);
 
 	const [currentTab, setCurrentTab] = useState('cards');
 	const [sortBy, setSortBy] = useState('card');
@@ -30,8 +31,9 @@ export const useTaskManager = () => {
 			cardAPI.getAll(),
 			categoryAPI.getAll(),
 			getUserMeAPI(),
-			taskAPI.getTodayTasks(),
 			taskAPI.getAll(),
+			taskAPI.getTodayTasks(),
+			taskAPI.getOverdueTasks(),
 		])
 			.then(
 				([
@@ -40,6 +42,7 @@ export const useTaskManager = () => {
 					userData,
 					todayTasksData,
 					allTasksData,
+					overdueTasksData,
 				]) => {
 					const actualCards =
 						cardsData.results || cardsData.cards || cardsData;
@@ -54,6 +57,14 @@ export const useTaskManager = () => {
 					);
 					setUsername(userData.username);
 
+					const actualAllTasks =
+						allTasksData.results ||
+						allTasksData.tasks ||
+						allTasksData;
+					setAllTasks(
+						Array.isArray(actualAllTasks) ? actualAllTasks : [],
+					);
+
 					const actualTodayTasks =
 						todayTasksData?.results ||
 						todayTasksData?.tasks ||
@@ -62,12 +73,12 @@ export const useTaskManager = () => {
 						Array.isArray(actualTodayTasks) ? actualTodayTasks : [],
 					);
 
-					const actualAllTasks =
-						allTasksData.results ||
-						allTasksData.tasks ||
-						allTasksData;
-					setAllTasks(
-						Array.isArray(actualAllTasks) ? actualAllTasks : [],
+					const actualOverdue =
+						overdueTasksData?.results ||
+						overdueTasksData?.tasks ||
+						overdueTasksData;
+					setOverdueTasks(
+						Array.isArray(actualOverdue) ? actualOverdue : [],
 					);
 				},
 			)
@@ -235,6 +246,7 @@ export const useTaskManager = () => {
 					t.id === task.id ? { ...t, status: 'done' } : t,
 				),
 			);
+			setOverdueTasks((prev) => prev.filter((t) => t.id !== task.id));
 		} catch (err) {
 			console.error('Ошибка при обновлении статуса задачи:', err);
 		}
@@ -264,6 +276,7 @@ export const useTaskManager = () => {
 					t.id === task.id ? { ...t, start_date: tomorrowStr } : t,
 				),
 			);
+			setOverdueTasks((prev) => prev.filter((t) => t.id !== task.id));
 		} catch (err) {
 			console.error('Ошибка при переносе задачи на завтра:', err);
 		}
@@ -319,5 +332,6 @@ export const useTaskManager = () => {
 		handleCompleteTodayTask,
 		handlePostponeTodayTask,
 		handleEnterTodayTask,
+		overdueTasks,
 	};
 };
