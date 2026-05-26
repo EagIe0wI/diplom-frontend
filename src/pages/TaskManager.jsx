@@ -43,6 +43,8 @@ const TaskManager = () => {
 		handlePostponeTodayTask,
 		handleEnterTodayTask,
 		overdueTasks,
+		events,
+		loadingEvents,
 	} = useTaskManager();
 
 	const groupedTasks = allTasks.reduce((acc, task) => {
@@ -91,17 +93,10 @@ const TaskManager = () => {
 		if (activeCard) {
 			return (
 				<CardDetail
-					tasks={tasks}
-					loadingTasks={loadingTasks}
-					categories={categories}
 					activeCard={activeCard}
+					categories={categories}
 					onLeave={handleLeaveCard}
-					onSearchTasks={handleSearchTasks}
-					onDeleteTask={handleDeleteTask}
 					onDeleteCard={handleDeleteCard}
-					onAddTask={() =>
-						setFormConfig({ type: 'task', mode: 'create' })
-					}
 					onUpdateCard={() =>
 						setFormConfig({
 							type: 'card',
@@ -109,7 +104,22 @@ const TaskManager = () => {
 							initialData: activeCard,
 						})
 					}
+					tasks={tasks}
+					loadingTasks={loadingTasks}
+					onSearchTasks={handleSearchTasks}
+					onAddTask={() =>
+						setFormConfig({ type: 'task', mode: 'create' })
+					}
 					onEnterTask={(taskObj) => setActiveTask(taskObj)}
+					events={events}
+					loadingEvents={loadingEvents}
+					onAddEvent={() =>
+						setFormConfig({
+							type: 'event',
+							mode: 'create',
+							cardId: activeCard.id,
+						})
+					}
 				/>
 			);
 		}
@@ -139,9 +149,7 @@ const TaskManager = () => {
 				<hr />
 
 				<TodayTasksbanner
-					todayTasks={todayTasks.filter(
-						(tt) => !overdueTasks.some((ot) => ot.id === tt.id),
-					)}
+					todayTasks={todayTasks}
 					onEnterTodayTask={handleEnterTodayTask}
 					onCompleteTodayTask={handleCompleteTodayTask}
 					onPostponeTodayTask={handlePostponeTodayTask}

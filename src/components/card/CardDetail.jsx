@@ -1,29 +1,34 @@
 import React, { useState } from 'react';
-import TaskList from '../task/TaskList';
-import TaskFilter from '../task/TaskFilter';
+import TaskSection from '../task/TaskSection';
+import EventSection from '../event/EventSection';
 
 function CardDetail({
+	activeCard,
+	categories,
+	onLeave,
+	onDeleteCard,
+	onUpdateCard,
 	tasks,
 	loadingTasks,
-	categories,
-	activeCard,
-	onLeave,
 	onSearchTasks,
-	onDeleteCard,
 	onAddTask,
-	onUpdateCard,
 	onEnterTask,
+	events,
+	loadingEvents,
+	onAddEvent,
 }) {
 	const [showCardOptions, setShowCardOptions] = useState(false);
+
+	if (!activeCard) return <p>Загрузка данных карточки...</p>;
 
 	const currentCategoryObj = categories.find(
 		(cat) => cat.id === activeCard.category,
 	);
 
 	return (
-		<div>
+		<div className="card-detail-container">
 			<header className="card-navigation-header">
-				<button onClick={onLeave}>← Назад к спискам</button>
+				<button onClick={onLeave}>Назад к спискам</button>
 				{' | '}
 				<button onClick={() => setShowCardOptions(!showCardOptions)}>
 					{showCardOptions ? 'Закрыть меню' : 'Управление карточкой'}
@@ -57,20 +62,21 @@ function CardDetail({
 			<p>Описание: {activeCard.description}</p>
 			<hr />
 
-			<div>
-				<span>Поиск задач: </span>
-				<TaskFilter onSearchChange={onSearchTasks} />
-				<button onClick={onAddTask}>+ Новая задача</button>
-			</div>
+			<TaskSection
+				tasks={tasks}
+				loadingTasks={loadingTasks}
+				onSearchTasks={onSearchTasks}
+				onAddTask={onAddTask}
+				onEnterTask={onEnterTask}
+			/>
 
-			<h3>Задачи:</h3>
-			{loadingTasks && <p>Загрузка задач...</p>}
+			<hr className="section-divider" />
 
-			{tasks.length > 0 ? (
-				<TaskList tasks={tasks} onEnterTask={onEnterTask} />
-			) : (
-				!loadingTasks && <p>Задач в этой карточке пока нет</p>
-			)}
+			<EventSection
+				events={events}
+				loadingEvents={loadingEvents}
+				onAddEvent={onAddEvent}
+			/>
 		</div>
 	);
 }
