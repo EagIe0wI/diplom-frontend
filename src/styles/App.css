@@ -58,7 +58,7 @@
 	text-decoration: underline;
 }
 
-/* ===== СЕКЦИЯ ЗАДАЧ (TaskList / TaskDetail) ===== */
+/* ===== СЕКЦИЯ ЗАДАЧ (TaskList / TaskDetail / Banners) ===== */
 .task-navigation-header {
 	margin-bottom: 10px;
 }
@@ -99,4 +99,22 @@
 	border: 2px dashed red;
 	padding: 5px;
 	margin: 10px 0;
+}
+
+/* ===== СЕКЦИЯ СОБЫТИЙ (EventList / EventDetail) ===== */
+.event-list-item {
+	cursor: pointer;
+	padding: 6px 0;
+	list-style-type: none;
+}
+
+.event-list-link {
+	color: #000000;
+	font-weight: 500;
+	transition: color 0.2s ease;
+}
+
+.event-list-item:hover .event-list-link {
+	color: blue;
+	text-decoration: underline;
 }

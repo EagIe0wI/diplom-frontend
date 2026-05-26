@@ -30,6 +30,7 @@ export const useTaskManager = () => {
 	const [activeTask, setActiveTask] = useState(null);
 
 	const [events, setEvents] = useState([]);
+	const [activeEvent, setActiveEvent] = useState(null);
 	const [loadingEvents, setLoadingEvents] = useState(false);
 
 	const [username, setUsername] = useState('');
@@ -77,6 +78,44 @@ export const useTaskManager = () => {
 		}
 	};
 
+	const handleFormSuccess = ({ action, data }) => {
+		setFormConfig(null);
+		if (action === 'createCard') {
+			setCards((prev) => [...prev, data]);
+		} else if (action === 'updateCard') {
+			setCards((prev) => prev.map((c) => (c.id === data.id ? data : c)));
+			setActiveCard(data);
+		} else if (action === 'createCategory') {
+			setCategories((prev) => [...prev, data]);
+		} else if (action === 'updateCategory') {
+			setCategories((prev) =>
+				prev.map((cat) => (cat.id === data.id ? data : cat)),
+			);
+		} else if (action === 'createTask') {
+			setTasks((prev) => [...prev, data]);
+			setAllTasks((prev) => [...prev, data]);
+		} else if (action === 'updateTask') {
+			setTasks((prev) => prev.map((t) => (t.id === data.id ? data : t)));
+			setAllTasks((prev) =>
+				prev.map((t) => (t.id === data.id ? data : t)),
+			);
+			setTodayTasks((prev) =>
+				prev.map((t) => (t.id === data.id ? data : t)),
+			);
+			if (activeTask && activeTask.id === data.id) {
+				setActiveTask(data);
+			}
+		} else if (action === 'createEvent') {
+			setEvents((prev) => [...prev, data]);
+		} else if (action === 'updateEvent') {
+			setEvents((prev) => prev.map((e) => (e.id === data.id ? data : e)));
+			if (activeEvent && activeEvent.id === data.id) {
+				setActiveEvent(data);
+			}
+		}
+		setFormConfig(null);
+	};
+
 	const fetchFilteredCards = async (search, categoryId) => {
 		setLoadingCards(true);
 		try {
@@ -92,28 +131,6 @@ export const useTaskManager = () => {
 	const handleSearchCards = async (searchText) => {
 		setCurrentSearch(searchText);
 		fetchFilteredCards(searchText, currentCategory);
-	};
-
-	const handleCategoryChange = (categoryId) => {
-		setCurrentCategory(categoryId);
-		fetchFilteredCards(currentSearch, categoryId);
-	};
-
-	const handleDeleteCategory = async (categoryId) => {
-		if (
-			!confirm(
-				'Вы уверены? Удаление категории может повлечь за собой удаление связанных карточек на бэкенде!',
-			)
-		)
-			return;
-		try {
-			await categoryAPI.delete(categoryId);
-			setCategories((prev) =>
-				prev.filter((cat) => cat.id !== categoryId),
-			);
-		} catch (err) {
-			console.error('Ошибка при удалении категории:', err);
-		}
 	};
 
 	const handleDeleteCard = async (cardId) => {
@@ -158,6 +175,7 @@ export const useTaskManager = () => {
 	const handleLeaveCard = () => {
 		setActiveCard(null);
 		setActiveTask(null);
+		setActiveEvent(null);
 		setCurrentSearch('');
 		setCurrentCategory('');
 
@@ -166,6 +184,28 @@ export const useTaskManager = () => {
 			setAllTasks(Array.isArray(actualAllTasks) ? actualAllTasks : []);
 		});
 		fetchFilteredCards('', '');
+	};
+
+	const handleCategoryChange = (categoryId) => {
+		setCurrentCategory(categoryId);
+		fetchFilteredCards(currentSearch, categoryId);
+	};
+
+	const handleDeleteCategory = async (categoryId) => {
+		if (
+			!confirm(
+				'Вы уверены? Удаление категории может повлечь за собой удаление связанных карточек на бэкенде!',
+			)
+		)
+			return;
+		try {
+			await categoryAPI.delete(categoryId);
+			setCategories((prev) =>
+				prev.filter((cat) => cat.id !== categoryId),
+			);
+		} catch (err) {
+			console.error('Ошибка при удалении категории:', err);
+		}
 	};
 
 	const handleSearchTasks = async (searchText) => {
@@ -191,43 +231,12 @@ export const useTaskManager = () => {
 		}
 	};
 
-	const handleFormSuccess = ({ action, data }) => {
-		if (action === 'createCard') {
-			setCards((prev) => [...prev, data]);
-		} else if (action === 'updateCard') {
-			setCards((prev) => prev.map((c) => (c.id === data.id ? data : c)));
-			setActiveCard(data);
-		} else if (action === 'createCategory') {
-			setCategories((prev) => [...prev, data]);
-		} else if (action === 'updateCategory') {
-			setCategories((prev) =>
-				prev.map((cat) => (cat.id === data.id ? data : cat)),
-			);
-		} else if (action === 'createTask') {
-			setTasks((prev) => [...prev, data]);
-			setAllTasks((prev) => [...prev, data]);
-		} else if (action === 'updateTask') {
-			setTasks((prev) => prev.map((t) => (t.id === data.id ? data : t)));
-			setAllTasks((prev) =>
-				prev.map((t) => (t.id === data.id ? data : t)),
-			);
-			setTodayTasks((prev) =>
-				prev.map((t) => (t.id === data.id ? data : t)),
-			);
-			if (activeTask && activeTask.id === data.id) {
-				setActiveTask(data);
-			}
-		} else if (action === 'createEvent') {
-			setEvents((prev) => [...prev, data]);
-		}
-		setFormConfig(null);
-	};
-
 	const fetchTodayBannerTasks = async () => {
 		try {
+			const localIsoDate = new Date().toISOString().split('T')[0];
 			const [todayData, overdueData] = await Promise.all([
-				taskAPI.getTodayTasks(),
-				taskAPI.getOverdueTasks(),
+				taskAPI.getToday(localIsoDate),
+				taskAPI.getOverdue(localIsoDate),
 			]);
 			setTodayTasks(todayData.results || todayData);
 			setOverdueTasks(overdueData.results || overdueData);
@@ -298,6 +307,16 @@ export const useTaskManager = () => {
 		setActiveTask(task);
 	};
 
+	const handleDeleteEvent = async (eventId) => {
+		if (!confirm('Удалить запись из дневника?')) return;
+		try {
+			await eventAPI.delete(eventId); // Метод мы завели в api/event.js на прошлых шагах
+			setEvents((prev) => prev.filter((e) => e.id !== eventId));
+		} catch (err) {
+			console.error('Ошибка при удалении события:', err);
+		}
+	};
+
 	return {
 		cards,
 		categories,
@@ -334,5 +353,8 @@ export const useTaskManager = () => {
 		events,
 		loadingEvents,
 		setEvents,
+		activeEvent,
+		setActiveEvent,
+		handleDeleteEvent,
 	};
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { cardAPI, taskAPI, categoryAPI } from '../api';
+import { cardAPI, taskAPI, categoryAPI, eventAPI } from '../api';
 
 const CUForm = ({
 	type: initialType,
@@ -22,9 +22,15 @@ const CUForm = ({
 	const [categoryId, setCategoryId] = useState(
 		mode === 'update' && initialData ? initialData.category || '' : '',
 	);
+
 	const [startDate, setStartDate] = useState(
-		mode === 'update' && initialData ? initialData.start_date || '' : '',
+		mode === 'update' && initialData
+			? initialData.start_date || initialData.event_date || ''
+			: initialType === 'event'
+				? new Date().toISOString().split('T')[0]
+				: '',
 	);
+
 	const [status, setStatus] = useState(
 		mode === 'update' && initialData
 			? initialData.status || 'todo'
@@ -101,6 +107,35 @@ const CUForm = ({
 						description,
 					);
 					onSuccess({ action: 'updateTask', data: updatedTask });
+				}
+			} else if (type === 'event') {
+				const eventDate =
+					startDate === ''
+						? new Date().toISOString().split('T')[0]
+						: startDate;
+				if (mode === 'create') {
+					if (!activeCard?.id) {
+						setError(
+							'Ошибка: Не выбрана активная карточка для события!',
+						);
+						return;
+					}
+					const newEvent = await eventAPI.create(
+						activeCard.id,
+						title,
+						eventDate,
+						description,
+					);
+					onSuccess({ action: 'createEvent', data: newEvent });
+				} else if (mode === 'update') {
+					const updatedEvent = await eventAPI.update(
+						initialData.id,
+						activeCard.id,
+						title,
+						eventDate,
+						description,
+					);
+					onSuccess({ action: 'updateEvent', data: updatedEvent });
 				}
 			}
 		} catch (err) {
@@ -181,6 +216,26 @@ const CUForm = ({
 		</div>
 	);
 
+	const renderEventFields = () => (
+		<div>
+			<div>
+				<label>Описание события: </label>
+				<textarea
+					value={description}
+					onChange={(e) => setDescription(e.target.value)}
+				/>
+			</div>
+			<div>
+				<label>Дата события: </label>
+				<input
+					type="date"
+					value={startDate}
+					onChange={(e) => setStartDate(e.target.value)}
+				/>
+			</div>
+		</div>
+	);
+
 	return (
 		<div>
 			{!type && mode === 'create' && (
@@ -193,7 +248,12 @@ const CUForm = ({
 						<option value="">-- Выберите --</option>
 						<option value="card">Карточку</option>
 						<option value="category">Категорию</option>
-						{activeCard && <option value="task">Задачу</option>}
+						{activeCard && activeCard.id && (
+							<option value="task">Задачу</option>
+						)}
+						{activeCard && activeCard.id && (
+							<option value="event">Запись в дневник</option>
+						)}
 					</select>
 					<button type="button" onClick={onCancel}>
 						Отмена
@@ -204,9 +264,7 @@ const CUForm = ({
 			{type && (
 				<form onSubmit={handleSubmit}>
 					<h3>{mode === 'create' ? 'Создание' : 'Редактирование'}</h3>
-
 					{error && <div className="form-error">{error}</div>}
-
 					<div>
 						<label>Название: </label>
 						<input
@@ -216,10 +274,9 @@ const CUForm = ({
 							required
 						/>
 					</div>
-
 					{type === 'card' && renderCardFields()}
 					{type === 'task' && renderTaskFields()}
-
+					{type === 'event' && renderEventFields()}{' '}
 					<div>
 						<button type="submit">Сохранить</button>
 						<button type="button" onClick={onCancel}>

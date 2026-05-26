@@ -3,11 +3,13 @@ import CardFilter from '../components/card/CardFilter';
 import CategoryFilter from '../components/category/CategoryFilter';
 import CardList from '../components/card/CardList';
 import CardDetail from '../components/card/CardDetail';
+import CardSection from '../components/card/CardSection';
 import TaskList from '../components/task/TaskList';
 import TaskDetail from '../components/task/TaskDetail';
 import TodayTasksbanner from '../components/task/TodayTasksBanner';
 import OverdueTasksBanner from '../components/task/OverdueTasksBanner';
 import CategoryList from '../components/category/CategoryList';
+import EventDetail from '../components/event/EventDetail';
 import CUForm from './CreateUpdateForm';
 import BaseLayout from '../components/BaseLayout';
 import { useTaskManager } from '../hooks/useTaskManager';
@@ -44,6 +46,9 @@ const TaskManager = () => {
 		handleEnterTodayTask,
 		overdueTasks,
 		events,
+		activeEvent,
+		setActiveEvent,
+		handleDeleteEvent,
 		loadingEvents,
 	} = useTaskManager();
 
@@ -90,6 +95,26 @@ const TaskManager = () => {
 			);
 		}
 
+		if (activeCard && activeEvent) {
+			return (
+				<EventDetail
+					event={activeEvent}
+					onLeaveEvent={() => setActiveEvent(null)}
+					onDeleteEvent={async (eventId) => {
+						await handleDeleteEvent(eventId);
+						setActiveEvent(null);
+					}}
+					onUpdateEvent={(eventObj) =>
+						setFormConfig({
+							type: 'event',
+							mode: 'update',
+							initialData: eventObj,
+						})
+					}
+				/>
+			);
+		}
+
 		if (activeCard) {
 			return (
 				<CardDetail
@@ -111,15 +136,13 @@ const TaskManager = () => {
 						setFormConfig({ type: 'task', mode: 'create' })
 					}
 					onEnterTask={(taskObj) => setActiveTask(taskObj)}
+					// События
 					events={events}
 					loadingEvents={loadingEvents}
 					onAddEvent={() =>
-						setFormConfig({
-							type: 'event',
-							mode: 'create',
-							cardId: activeCard.id,
-						})
+						setFormConfig({ type: 'event', mode: 'create' })
 					}
+					onEnterEvent={(eventObj) => setActiveEvent(eventObj)}
 				/>
 			);
 		}
@@ -163,27 +186,17 @@ const TaskManager = () => {
 				/>
 
 				{currentTab === 'cards' && (
-					<div>
-						<div>
-							<CardFilter onSearchChange={handleSearchCards} />
-							<CategoryFilter
-								categories={categories}
-								onCategoryChange={handleCategoryChange}
-							/>
-							<button
-								onClick={() =>
-									setFormConfig({
-										type: null,
-										mode: 'create',
-									})
-								}
-							>
-								Создать карточку
-							</button>
-						</div>
-						{loadingCards && <p>Загрузка карточек...</p>}
-						<CardList cards={cards} onEnterCard={handleEnterCard} />
-					</div>
+					<CardSection
+						cards={cards}
+						categories={categories}
+						loadingCards={loadingCards}
+						onSearchCards={handleSearchCards}
+						onCategoryChange={handleCategoryChange}
+						onCreateCardClick={() =>
+							setFormConfig({ type: null, mode: 'create' })
+						}
+						onEnterCard={handleEnterCard}
+					/>
 				)}
 
 				{currentTab === 'tasks' && (

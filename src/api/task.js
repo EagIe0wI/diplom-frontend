@@ -14,10 +14,15 @@ export const taskAPI = {
 		return response.data;
 	},
 
-	getTodayTasks: () => api.get('tasks/tasks/today/').then((res) => res.data),
+	getToday: async (date) => {
+		const response = await api.get(`/tasks/tasks/today/?date=${date}`);
+		return response.data;
+	},
 
-	getOverdueTasks: () =>
-		api.get('tasks/tasks/overdue/').then((res) => res.data),
+	getOverdue: async (date) => {
+		const response = await api.get(`/tasks/tasks/overdue/?date=${date}`);
+		return response.data;
+	},
 
 	create: async (card, title, startDate, description) => {
 		const response = await api.post('/tasks/create/', {

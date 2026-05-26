@@ -13,7 +13,17 @@ export const eventAPI = {
 	create: async (cardId, title, eventDate, description = '') => {
 		const response = await api.post('/events/create/', {
 			title,
-			event_date: eventDate,
+			date_happened: eventDate,
+			description,
+			card: cardId,
+		});
+		return response.data;
+	},
+
+	update: async (id, cardId, title, eventDate, description = '') => {
+		const response = await api.put(`/events/${id}/update/`, {
+			title,
+			date_happened: eventDate,
 			description,
 			card: cardId,
 		});

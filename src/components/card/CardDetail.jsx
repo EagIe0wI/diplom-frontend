@@ -16,6 +16,7 @@ function CardDetail({
 	events,
 	loadingEvents,
 	onAddEvent,
+	onEnterEvent,
 }) {
 	const [showCardOptions, setShowCardOptions] = useState(false);
 
@@ -76,6 +77,7 @@ function CardDetail({
 				events={events}
 				loadingEvents={loadingEvents}
 				onAddEvent={onAddEvent}
+				onEnterEvent={onEnterEvent}
 			/>
 		</div>
 	);

@@ -1,43 +1,37 @@
 import React from 'react';
 
-function EventDetail({ event, onClose }) {
-	if (!event) return null;
-
+function EventDetail({ event, onLeaveEvent, onUpdateEvent, onDeleteEvent }) {
 	const formattedDate = new Date(event.event_date).toLocaleDateString(
 		'ru-RU',
 		{
 			day: 'numeric',
 			month: 'long',
 			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit',
 		},
 	);
 
 	return (
-		<div className="event-detail-modal">
-			<div className="event-detail-box">
-				<div className="event-detail-header">
-					<h3>Просмотр события</h3>
-					<button className="btn-close-detail" onClick={onClose}>
-						×
-					</button>
-				</div>
-				<div className="event-detail-body">
-					<p className="event-detail-date">
-						<strong>Дата:</strong> {formattedDate}
-					</p>
-					<p className="event-detail-title">
-						<strong>Название:</strong> {event.title}
-					</p>
-					<p className="event-detail-desc">
-						<strong>Описание:</strong>
-					</p>
-					<div className="event-detail-desc-text">
-						{event.description || 'Описание отсутствует.'}
-					</div>
-				</div>
-			</div>
+		<div className="event-detail-container">
+			<header className="event-navigation-header">
+				<button onClick={onLeaveEvent}>← Назад к карточке</button>
+				{' | '}
+				<button onClick={() => onUpdateEvent(event)}>
+					Редактировать
+				</button>
+				<button onClick={() => onDeleteEvent(event.id)}>
+					Удалить запись
+				</button>
+			</header>
+
+			<hr />
+			<h2>{event.title}</h2>
+			<p>
+				<strong>Дата события:</strong> {formattedDate}
+			</p>
+			<p>
+				<strong>Описание:</strong>{' '}
+				{event.description || 'Описание отсутствует.'}
+			</p>
 		</div>
 	);
 }
