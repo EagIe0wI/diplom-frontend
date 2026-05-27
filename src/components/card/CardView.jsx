@@ -1,6 +1,6 @@
 import React from 'react';
 import CardFilter from './CardFilter';
-import CategoryFilter from '../category/CategoryFilter';
+import CategorySelect from '../category/CategorySelect';
 import CardList from './CardList';
 
 function CardView({
@@ -16,7 +16,7 @@ function CardView({
 		<div className="tab-cards-section">
 			<div className="cards-controls-block">
 				<CardFilter onSearchChange={onSearchCards} />
-				<CategoryFilter
+				<CategorySelect
 					categories={categories}
 					onCategoryChange={onCategoryChange}
 				/>

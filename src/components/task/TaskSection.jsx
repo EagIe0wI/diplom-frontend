@@ -14,7 +14,6 @@ function TaskSection({
 			<div>
 				<span>Поиск задач: </span>
 				<TaskFilter onSearchChange={onSearchTasks} />
-
 				<button onClick={onAddTask}>Новая задача</button>
 			</div>
 

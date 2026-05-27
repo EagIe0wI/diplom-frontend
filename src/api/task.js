@@ -6,7 +6,6 @@ export const taskAPI = {
 		const params = [];
 		if (cardId) params.push(`card=${cardId}`);
 		if (search) params.push(`search=${encodeURIComponent(search)}`);
-
 		if (params.length > 0) {
 			url += `?${params.join('&')}`;
 		}

@@ -4,7 +4,7 @@ import CardList from '../components/card/CardList';
 import CardDetail from '../components/card/CardDetail';
 import CardView from '../components/card/CardView';
 import CategoryList from '../components/category/CategoryList';
-import CategoryFilter from '../components/category/CategoryFilter';
+import CategoryFilter from '../components/category/CategorySelect';
 import CategoryView from '../components/category/CategoryView';
 import CategoryDetail from '../components/category/CategoryDetail';
 import TaskList from '../components/task/TaskList';
@@ -44,6 +44,7 @@ const TaskManager = () => {
 		handleSearchTasks,
 		handleDeleteTask,
 		handleFormSuccess,
+		handleSearchEvents,
 		todayTasks,
 		handleCompleteTodayTask,
 		handlePostponeTodayTask,
@@ -57,6 +58,7 @@ const TaskManager = () => {
 		loadingEvents,
 		activeCategory,
 		setActiveCategory,
+		handleSearchCategory,
 	} = useTaskManager();
 
 	const renderCurrentScreen = () => {
@@ -228,6 +230,7 @@ const TaskManager = () => {
 					<AllTasksView
 						allTasks={allTasks}
 						cards={cards}
+						onSearchTasks={handleSearchTasks}
 						onEnterTask={handleEnterTodayTask}
 					/>
 				)}
@@ -236,6 +239,7 @@ const TaskManager = () => {
 					<AllEventsView
 						allEvents={allEvents}
 						cards={cards}
+						onSearchEvents={handleSearchEvents}
 						onEnterEvent={(eventObj) => setActiveEvent(eventObj)}
 					/>
 				)}
@@ -243,6 +247,7 @@ const TaskManager = () => {
 				{currentTab === 'categories' && (
 					<CategoryView
 						categories={categories}
+						handleSearchCategory={handleSearchCategory}
 						onCreateCategoryClick={() =>
 							setFormConfig({ type: 'category', mode: 'create' })
 						}

@@ -1,10 +1,13 @@
 import api from './axios';
 
 export const eventAPI = {
-	getAll: async (cardId) => {
+	getAll: async (cardId = null, search = '') => {
 		let url = '/events/events/';
-		if (cardId) {
-			url += `?card=${cardId}`;
+		const params = [];
+		if (cardId) params.push(`card=${cardId}`);
+		if (search) params.push(`search=${encodeURIComponent(search)}`);
+		if (params.length > 0) {
+			url += `?${params.join('&')}`;
 		}
 		const response = await api.get(url);
 		return response.data;

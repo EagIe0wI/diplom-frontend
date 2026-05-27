@@ -207,32 +207,35 @@ export const useTaskManager = () => {
 		fetchFilteredCards(currentSearch, categoryId);
 	};
 
-	const handleDeleteCategory = async (categoryId) => {
-		if (
-			!confirm(
-				'Вы уверены? Удаление категории может повлечь за собой удаление связанных карточек на бэкенде!',
-			)
-		)
-			return;
+	const handleDeleteCategory = async (catId) => {
+		if (!confirm('Вы уверены, что хотите удалить эту категорию?')) return;
 		try {
-			await categoryAPI.delete(categoryId);
-			setCategories((prev) =>
-				prev.filter((cat) => cat.id !== categoryId),
-			);
+			await categoryAPI.delete(catId);
+			setCategories((prev) => prev.filter((c) => c.id !== catId));
 		} catch (err) {
 			console.error('Ошибка при удалении категории:', err);
 		}
 	};
 
-	const handleSearchTasks = async (searchText) => {
-		setLoadingTasks(true);
+	const handleSearchCategory = async (searchText) => {
 		try {
-			const tasksData = await taskAPI.getAll(activeCard.id, searchText);
-			const actualTasks =
-				tasksData.results || tasksData.tasks || tasksData;
-			setTasks(Array.isArray(actualTasks) ? actualTasks : []);
-		} finally {
-			setLoadingTasks(false);
+			const data = await categoryAPI.getAll(searchText);
+			const actualCategories = data.results || data.categories || data;
+			setCategories(
+				Array.isArray(actualCategories) ? actualCategories : [],
+			);
+		} catch (err) {
+			console.error('Ошибка поиска категорий:', err);
+		}
+	};
+
+	const handleSearchTasks = async (searchText) => {
+		try {
+			const data = await taskAPI.getAll(null, searchText);
+			const actualTasks = data.results || data.tasks || data;
+			setAllTasks(Array.isArray(actualTasks) ? actualTasks : []);
+		} catch (err) {
+			console.error('Ошибка поиска задач:', err);
 		}
 	};
 
@@ -332,6 +335,16 @@ export const useTaskManager = () => {
 		}
 	};
 
+	const handleSearchEvents = async (searchText) => {
+		try {
+			const data = await eventAPI.getAll(null, searchText);
+			const actualEvents = data.results || data.events || data;
+			setAllEvents(Array.isArray(actualEvents) ? actualEvents : []);
+		} catch (err) {
+			console.error('Ошибка поиска событий:', err);
+		}
+	};
+
 	return {
 		cards,
 		categories,
@@ -359,6 +372,8 @@ export const useTaskManager = () => {
 		handleSearchTasks,
 		handleDeleteTask,
 		handleFormSuccess,
+		handleSearchEvents,
+		handleSearchCategory,
 		todayTasks,
 		handleCompleteTodayTask,
 		handlePostponeTodayTask,

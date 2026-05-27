@@ -1,7 +1,8 @@
 import React from 'react';
 import EventList from './EventList';
+import EventFilter from './EventFilter';
 
-function AllEventsView({ allEvents, cards, onEnterEvent }) {
+function AllEventsView({ allEvents, cards, onSearchEvents, onEnterEvent }) {
 	const groupedEvents = allEvents.reduce((acc, event) => {
 		const cardId = event.card;
 		if (!acc[cardId]) acc[cardId] = [];
@@ -11,6 +12,10 @@ function AllEventsView({ allEvents, cards, onEnterEvent }) {
 
 	return (
 		<div className="all-events-tab-view">
+			<div className="tab-filters-block">
+				<EventFilter onSearchChange={onSearchEvents} />
+			</div>
+
 			{Object.keys(groupedEvents).map((cardId) => {
 				const parentCard = cards.find((c) => c.id === Number(cardId));
 				const cardTitle = parentCard

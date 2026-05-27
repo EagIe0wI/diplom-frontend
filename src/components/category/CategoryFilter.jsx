@@ -1,16 +1,16 @@
 import React from 'react';
 
-function CategoryFilter({ categories, onCategoryChange }) {
-	console.log('Категории в фильтре:', categories);
+function CategoryFilter({ onSearchChange }) {
 	return (
-		<select onChange={(e) => onCategoryChange(e.target.value)}>
-			<option value="">Все категории</option>
-			{categories.map((cat) => (
-				<option key={cat.id} value={cat.id}>
-					{cat.title}
-				</option>
-			))}
-		</select>
+		<input
+			type="text"
+			placeholder="Поиск категорий..."
+			onChange={(e) => {
+				if (typeof onSearchChange === 'function') {
+					onSearchChange(e.target.value);
+				}
+			}}
+		/>
 	);
 }
 

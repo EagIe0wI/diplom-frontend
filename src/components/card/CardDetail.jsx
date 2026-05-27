@@ -17,6 +17,7 @@ function CardDetail({
 	loadingEvents,
 	onAddEvent,
 	onEnterEvent,
+	handleSearchEvents,
 }) {
 	const [showCardOptions, setShowCardOptions] = useState(false);
 
@@ -76,6 +77,7 @@ function CardDetail({
 			<EventSection
 				events={events}
 				loadingEvents={loadingEvents}
+				onSearchEvents={handleSearchEvents}
 				onAddEvent={onAddEvent}
 				onEnterEvent={onEnterEvent}
 			/>
