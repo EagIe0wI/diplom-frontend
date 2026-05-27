@@ -12,7 +12,6 @@ const CUForm = ({
 }) => {
 	const [type, setType] = useState(initialType || '');
 	const [error, setError] = useState(null);
-
 	const [title, setTitle] = useState(
 		mode === 'update' && initialData ? initialData.title || '' : '',
 	);
@@ -22,7 +21,6 @@ const CUForm = ({
 	const [categoryId, setCategoryId] = useState(
 		mode === 'update' && initialData ? initialData.category || '' : '',
 	);
-
 	const [startDate, setStartDate] = useState(
 		mode === 'update' && initialData
 			? initialData.start_date || initialData.event_date || ''
@@ -30,12 +28,13 @@ const CUForm = ({
 				? new Date().toISOString().split('T')[0]
 				: '',
 	);
-
 	const [status, setStatus] = useState(
 		mode === 'update' && initialData
 			? initialData.status || 'todo'
 			: 'todo',
 	);
+	const [recurrenceType, setRecurrenceType] = useState('');
+	const [recurrenceInterval, setRecurrenceInterval] = useState(1);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -85,6 +84,14 @@ const CUForm = ({
 			} else if (type === 'task') {
 				const formattedDate =
 					startDate === '' ? null : startDate.split('T')[0];
+				let rruleString = null;
+				if (recurrenceType) {
+					const interval =
+						recurrenceType === 'YEARLY'
+							? 1
+							: Number(recurrenceInterval);
+					rruleString = `FREQ=${recurrenceType};INTERVAL=${interval}`;
+				}
 
 				if (mode === 'create') {
 					if (!activeCard?.id) {
@@ -96,6 +103,7 @@ const CUForm = ({
 						title,
 						formattedDate,
 						description,
+						rruleString,
 					);
 					onSuccess({ action: 'createTask', data: newTask });
 				} else if (mode === 'update') {
@@ -106,6 +114,7 @@ const CUForm = ({
 						status,
 						activeCard.id,
 						description,
+						rruleString,
 					);
 					onSuccess({ action: 'updateTask', data: updatedTask });
 				}
@@ -200,6 +209,48 @@ const CUForm = ({
 					onChange={(e) => setStartDate(e.target.value)}
 				/>
 			</div>
+
+			<div>
+				<label>Повторение задачи: </label>
+				<select
+					value={recurrenceType}
+					onChange={(e) => {
+						setRecurrenceType(e.target.value);
+						setRecurrenceInterval(1);
+					}}
+				>
+					<option value="">Не повторять</option>
+					<option value="DAILY">Ежедневно (в днях)</option>
+					<option value="MONTHLY">Ежемесячно (в месяцах)</option>
+					<option value="YEARLY">Ежегодно</option>
+				</select>
+			</div>
+
+			{recurrenceType === 'DAILY' && (
+				<div>
+					<label>Интервал повторения (в днях, 1-31): </label>
+					<input
+						type="number"
+						min="1"
+						max="31"
+						value={recurrenceInterval}
+						onChange={(e) => setRecurrenceInterval(e.target.value)}
+					/>
+				</div>
+			)}
+
+			{recurrenceType === 'MONTHLY' && (
+				<div>
+					<label>Интервал повторения (в месяцах): </label>
+					<input
+						type="number"
+						min="1"
+						max="12"
+						value={recurrenceInterval}
+						onChange={(e) => setRecurrenceInterval(e.target.value)}
+					/>
+				</div>
+			)}
 
 			{mode === 'update' && (
 				<div>
