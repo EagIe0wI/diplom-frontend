@@ -270,18 +270,17 @@ export const useTaskManager = () => {
 
 	const handlePostponeTodayTask = async (task) => {
 		try {
-			const tomorrow = new Date(task.start_date);
+			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
-
+			const formattedTomorrowDate = tomorrow.toISOString().split('T')[0];
 			await taskAPI.update(
 				task.id,
 				task.title,
-				tomorrow.toISOString(),
+				formattedTomorrowDate,
 				task.status,
 				task.card,
 				task.description,
 			);
-
 			await fetchTodayBannerTasks();
 		} catch (err) {
 			console.error('Не удалось отложить задачу:', err);

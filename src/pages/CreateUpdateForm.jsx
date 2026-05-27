@@ -83,7 +83,8 @@ const CUForm = ({
 					});
 				}
 			} else if (type === 'task') {
-				const formattedDate = startDate === '' ? null : startDate;
+				const formattedDate =
+					startDate === '' ? null : startDate.split('T')[0];
 
 				if (mode === 'create') {
 					if (!activeCard?.id) {
