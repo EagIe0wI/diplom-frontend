@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { cardAPI, taskAPI, categoryAPI } from '../api';
+import { cardAPI, taskAPI, categoryAPI, eventAPI } from '../api';
 
 const CUForm = ({
 	type: initialType,
@@ -13,7 +13,6 @@ const CUForm = ({
 	const [type, setType] = useState(initialType || '');
 	const [error, setError] = useState(null);
 
-	// Стейты полей
 	const [title, setTitle] = useState(
 		mode === 'update' && initialData ? initialData.title || '' : '',
 	);
@@ -23,9 +22,15 @@ const CUForm = ({
 	const [categoryId, setCategoryId] = useState(
 		mode === 'update' && initialData ? initialData.category || '' : '',
 	);
+
 	const [startDate, setStartDate] = useState(
-		mode === 'update' && initialData ? initialData.start_date || '' : '',
+		mode === 'update' && initialData
+			? initialData.start_date || initialData.event_date || ''
+			: initialType === 'event'
+				? new Date().toISOString().split('T')[0]
+				: '',
 	);
+
 	const [status, setStatus] = useState(
 		mode === 'update' && initialData
 			? initialData.status || 'todo'
@@ -42,16 +47,10 @@ const CUForm = ({
 		}
 
 		try {
-			// --- КАРТОЧКИ ---
 			if (type === 'card') {
 				if (mode === 'create') {
-					if (!categoryId || categoryId === '') {
-						setError(
-							'Ошибка: Выберите категорию! Карточка не может быть создана без нее.',
-						);
-						return;
-					}
-					const cleanCategoryId = Number(categoryId);
+					const cleanCategoryId =
+						categoryId !== '' ? Number(categoryId) : null;
 					const newCard = await cardAPI.create(
 						title,
 						description,
@@ -65,22 +64,27 @@ const CUForm = ({
 					);
 					onSuccess({ action: 'updateCard', data: updatedCard });
 				}
-			}
-
-			// --- КАТЕГОРИИ ---
-			else if (type === 'category') {
+			} else if (type === 'category') {
 				if (mode === 'create') {
 					const newCategory = await categoryAPI.create(
 						title,
 						description,
 					);
 					onSuccess({ action: 'createCategory', data: newCategory });
+				} else if (mode === 'update') {
+					const updatedCategory = await categoryAPI.update(
+						initialData.id,
+						title,
+						description,
+					);
+					onSuccess({
+						action: 'updateCategory',
+						data: updatedCategory,
+					});
 				}
-			}
-
-			// --- ЗАДАЧИ (ТАСКИ) ---
-			else if (type === 'task') {
-				const formattedDate = startDate === '' ? null : startDate;
+			} else if (type === 'task') {
+				const formattedDate =
+					startDate === '' ? null : startDate.split('T')[0];
 
 				if (mode === 'create') {
 					if (!activeCard?.id) {
@@ -104,6 +108,35 @@ const CUForm = ({
 						description,
 					);
 					onSuccess({ action: 'updateTask', data: updatedTask });
+				}
+			} else if (type === 'event') {
+				const eventDate =
+					startDate === ''
+						? new Date().toISOString().split('T')[0]
+						: startDate;
+				if (mode === 'create') {
+					if (!activeCard?.id) {
+						setError(
+							'Ошибка: Не выбрана активная карточка для события!',
+						);
+						return;
+					}
+					const newEvent = await eventAPI.create(
+						activeCard.id,
+						title,
+						eventDate,
+						description,
+					);
+					onSuccess({ action: 'createEvent', data: newEvent });
+				} else if (mode === 'update') {
+					const updatedEvent = await eventAPI.update(
+						initialData.id,
+						activeCard.id,
+						title,
+						eventDate,
+						description,
+					);
+					onSuccess({ action: 'updateEvent', data: updatedEvent });
 				}
 			}
 		} catch (err) {
@@ -133,13 +166,12 @@ const CUForm = ({
 			</div>
 			{mode === 'create' && (
 				<div>
-					<label>Категория (Обязательно): </label>
+					<label>Категория (Опционально): </label>
 					<select
 						value={categoryId}
 						onChange={(e) => setCategoryId(e.target.value)}
-						required
 					>
-						<option value="">-- Выберите --</option>
+						<option value="">-- Без категории --</option>
 						{categories.map((cat) => (
 							<option key={cat.id} value={cat.id}>
 								{cat.title}
@@ -168,19 +200,40 @@ const CUForm = ({
 					onChange={(e) => setStartDate(e.target.value)}
 				/>
 			</div>
+
 			{mode === 'update' && (
 				<div>
-					<label>Статус: </label>
+					<label>Статус задачи: </label>
 					<select
 						value={status}
 						onChange={(e) => setStatus(e.target.value)}
 					>
-						<option value="todo">Todo</option>
-						<option value="in_progress">In Progress</option>
-						<option value="done">Done</option>
+						<option value="todo">Запланировано</option>
+						<option value="in_progress">В процессе</option>
+						<option value="done">Выполнено</option>
 					</select>
 				</div>
 			)}
+		</div>
+	);
+
+	const renderEventFields = () => (
+		<div>
+			<div>
+				<label>Описание события: </label>
+				<textarea
+					value={description}
+					onChange={(e) => setDescription(e.target.value)}
+				/>
+			</div>
+			<div>
+				<label>Дата события: </label>
+				<input
+					type="date"
+					value={startDate}
+					onChange={(e) => setStartDate(e.target.value)}
+				/>
+			</div>
 		</div>
 	);
 
@@ -196,7 +249,12 @@ const CUForm = ({
 						<option value="">-- Выберите --</option>
 						<option value="card">Карточку</option>
 						<option value="category">Категорию</option>
-						{activeCard && <option value="task">Задачу</option>}
+						{activeCard && activeCard.id && (
+							<option value="task">Задачу</option>
+						)}
+						{activeCard && activeCard.id && (
+							<option value="event">Запись в дневник</option>
+						)}
 					</select>
 					<button type="button" onClick={onCancel}>
 						Отмена
@@ -207,9 +265,7 @@ const CUForm = ({
 			{type && (
 				<form onSubmit={handleSubmit}>
 					<h3>{mode === 'create' ? 'Создание' : 'Редактирование'}</h3>
-
 					{error && <div className="form-error">{error}</div>}
-
 					<div>
 						<label>Название: </label>
 						<input
@@ -219,10 +275,9 @@ const CUForm = ({
 							required
 						/>
 					</div>
-
 					{type === 'card' && renderCardFields()}
 					{type === 'task' && renderTaskFields()}
-
+					{type === 'event' && renderEventFields()}{' '}
 					<div>
 						<button type="submit">Сохранить</button>
 						<button type="button" onClick={onCancel}>

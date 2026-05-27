@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
-import TaskList from '../task/TaskList';
-import TaskFilter from '../task/TaskFilter';
+import TaskSection from '../task/TaskSection';
+import EventSection from '../event/EventSection';
 
 function CardDetail({
+	activeCard,
+	categories,
+	onLeave,
+	onDeleteCard,
+	onUpdateCard,
 	tasks,
 	loadingTasks,
-	categories,
-	activeCard,
-	onLeave,
 	onSearchTasks,
-	onDeleteCard,
 	onAddTask,
-	onUpdateCard,
-	onEnterTask, // ИСПРАВЛЕНИЕ 1: Теперь мы принимаем этот проп сверху из TaskManager!
+	onEnterTask,
+	events,
+	loadingEvents,
+	onAddEvent,
+	onEnterEvent,
 }) {
 	const [showCardOptions, setShowCardOptions] = useState(false);
 
-	// Находим объект категории по ID из активной карточки
+	if (!activeCard) return <p>Загрузка данных карточки...</p>;
+
 	const currentCategoryObj = categories.find(
 		(cat) => cat.id === activeCard.category,
 	);
 
-	// ИСПРАВЛЕНИЕ 2: Убрали лишние проверки с activeTask, так как экраны теперь переключает сам TaskManager
-
 	return (
-		<div>
+		<div className="card-detail-container">
 			<header className="card-navigation-header">
-				<button onClick={onLeave}>← Назад к спискам</button>
+				<button onClick={onLeave}>Назад к спискам</button>
 				{' | '}
 				<button onClick={() => setShowCardOptions(!showCardOptions)}>
 					{showCardOptions ? 'Закрыть меню' : 'Управление карточкой'}
@@ -52,26 +55,30 @@ function CardDetail({
 				<strong>Категория:</strong>{' '}
 				{currentCategoryObj
 					? currentCategoryObj.title
-					: `ID ${activeCard.category}`}
+					: activeCard.category
+						? `ID ${activeCard.category}`
+						: 'Без категории'}
 			</p>
 
 			<p>Описание: {activeCard.description}</p>
 			<hr />
 
-			<div>
-				<span>Поиск задач: </span>
-				<TaskFilter onSearchChange={onSearchTasks} />
-				<button onClick={onAddTask}>+ Новая задача</button>
-			</div>
+			<TaskSection
+				tasks={tasks}
+				loadingTasks={loadingTasks}
+				onSearchTasks={onSearchTasks}
+				onAddTask={onAddTask}
+				onEnterTask={onEnterTask}
+			/>
 
-			<h3>Задачи:</h3>
-			{loadingTasks && <p>Загрузка задач...</p>}
+			<hr className="section-divider" />
 
-			{tasks.length > 0 ? (
-				<TaskList tasks={tasks} onEnterTask={onEnterTask} />
-			) : (
-				!loadingTasks && <p>Задач в этой карточке пока нет</p>
-			)}
+			<EventSection
+				events={events}
+				loadingEvents={loadingEvents}
+				onAddEvent={onAddEvent}
+				onEnterEvent={onEnterEvent}
+			/>
 		</div>
 	);
 }

@@ -14,6 +14,16 @@ export const taskAPI = {
 		return response.data;
 	},
 
+	getToday: async (date) => {
+		const response = await api.get(`/tasks/tasks/today/?date=${date}`);
+		return response.data;
+	},
+
+	getOverdue: async (date) => {
+		const response = await api.get(`/tasks/tasks/overdue/?date=${date}`);
+		return response.data;
+	},
+
 	create: async (card, title, startDate, description) => {
 		const response = await api.post('/tasks/create/', {
 			title,

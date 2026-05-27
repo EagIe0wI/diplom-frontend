@@ -3,10 +3,18 @@ import React, { useState } from 'react';
 function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 	const [showTaskOptions, setShowTaskOptions] = useState(false);
 
+	const formattedDate = task.start_date
+		? new Date(task.start_date).toLocaleDateString('ru-RU', {
+				day: 'numeric',
+				month: 'long',
+				year: 'numeric',
+			})
+		: 'Дата не указана';
+
 	const statusLabels = {
-		todo: 'К выполнению (Todo)',
+		todo: 'Запланировано',
 		in_progress: 'В процессе',
-		done: 'Готово',
+		done: 'Выполнено',
 	};
 
 	return (
@@ -18,7 +26,6 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 					{showTaskOptions ? 'Закрыть меню' : 'Управление задачей'}
 				</button>
 			</header>
-
 			{showTaskOptions && (
 				<div className="task-options-block">
 					<span>Действия с задачей: </span>
@@ -30,11 +37,8 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 					</button>
 				</div>
 			)}
-
 			<hr />
-
 			<h1>{task.title}</h1>
-
 			<p>
 				<strong>Описание:</strong> {task.description || 'Нет описания'}
 			</p>
@@ -43,9 +47,8 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 				{statusLabels[task.status] || task.status || 'Не указан'}
 			</p>
 			<p>
-				<strong>Дата начала:</strong> {task.start_date || 'Не задана'}
+				<strong>Дата выполнения:</strong> {formattedDate}
 			</p>
-
 			{task.rrule_rule && (
 				<p>
 					<strong>Повторение (RRule):</strong> {task.rrule_rule}

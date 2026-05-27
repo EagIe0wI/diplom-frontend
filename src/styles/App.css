@@ -1,4 +1,4 @@
-/* ==================== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРОВ ==================== */
+/* ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРОВ ===== */
 .task-manager-container {
 	width: 100%;
 	max-width: 800px;
@@ -13,7 +13,7 @@
 	font-size: 18px;
 }
 
-/* ==================== ФОРМЫ И ОШИБКИ (CUForm / Логин) ==================== */
+/* ===== ФОРМЫ И ОШИБКИ (CUForm / Логин) ====== */
 .form-error {
 	color: red;
 	font-weight: bold;
@@ -30,7 +30,7 @@
 	margin-right: 10px;
 }
 
-/* ==================== СЕКЦИЯ КАРТОЧЕК (CardList / CardDetail) ==================== */
+/* ===== СЕКЦИЯ КАРТОЧЕК (CardList / CardDetail) ===== */
 .card-navigation-header {
 	margin-bottom: 10px;
 }
@@ -44,7 +44,7 @@
 .card-list-item {
 	cursor: pointer;
 	padding: 8px 0;
-	list-style-type: none; /* Убираем маркеры-точки Ubuntu */
+	list-style-type: none;
 }
 
 .card-list-link {
@@ -53,13 +53,12 @@
 	transition: color 0.2s ease;
 }
 
-/* Эффект наведения на карточку */
 .card-list-item:hover .card-list-link {
 	color: blue;
 	text-decoration: underline;
 }
 
-/* ==================== СЕКЦИЯ ЗАДАЧ (TaskList / TaskDetail) ==================== */
+/* ===== СЕКЦИЯ ЗАДАЧ (TaskList / TaskDetail / Banners) ===== */
 .task-navigation-header {
 	margin-bottom: 10px;
 }
@@ -73,7 +72,7 @@
 .task-list-item {
 	cursor: pointer;
 	padding: 6px 0;
-	list-style-type: none; /* Убираем маркеры-точки */
+	list-style-type: none;
 }
 
 .task-list-link {
@@ -82,8 +81,40 @@
 	transition: color 0.2s ease;
 }
 
-/* Эффект наведения на задачу */
 .task-list-item:hover .task-list-link {
+	color: blue;
+	text-decoration: underline;
+}
+
+.today-banner-block {
+	background-color: beige;
+	border: 2px solid orange;
+	padding: 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+}
+
+.overdue-banner-block {
+	background-color: pink;
+	border: 2px dashed red;
+	padding: 5px;
+	margin: 10px 0;
+}
+
+/* ===== СЕКЦИЯ СОБЫТИЙ (EventList / EventDetail) ===== */
+.event-list-item {
+	cursor: pointer;
+	padding: 6px 0;
+	list-style-type: none;
+}
+
+.event-list-link {
+	color: #000000;
+	font-weight: 500;
+	transition: color 0.2s ease;
+}
+
+.event-list-item:hover .event-list-link {
 	color: blue;
 	text-decoration: underline;
 }

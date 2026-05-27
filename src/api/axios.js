@@ -50,8 +50,6 @@ api.interceptors.response.use(
 			error.response.status === 401 &&
 			!originalRequest._retry
 		) {
-			// ЗАЩИТА: Если 401 прилетел от самого запроса обновления токена,
-			// убираем слэш из проверки, чтобы метод .includes отработал корректно
 			if (originalRequest.url.includes('accounts/token/refresh')) {
 				localStorage.removeItem('access_token');
 				localStorage.removeItem('refresh_token');
@@ -79,8 +77,6 @@ api.interceptors.response.use(
 
 			if (refreshToken) {
 				try {
-					// ИСПРАВЛЕНИЕ: Убираем первый слэш! Было '/accounts/...', стало 'accounts/...'
-					// Теперь Axios склеит baseURL и этот путь без двойного //
 					const response = await api.post('accounts/token/refresh/', {
 						refresh: refreshToken,
 					});
