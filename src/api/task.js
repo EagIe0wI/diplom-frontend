@@ -24,23 +24,39 @@ export const taskAPI = {
 		return response.data;
 	},
 
-	create: async (card, title, startDate, description) => {
+	create: async (
+		cardId,
+		title,
+		startDate,
+		description = '',
+		rruleRule = null,
+	) => {
 		const response = await api.post('/tasks/create/', {
 			title,
 			start_date: startDate,
 			description,
-			card: card,
+			card: cardId,
+			rrule_rule: rruleRule,
 		});
 		return response.data;
 	},
 
-	update: async (id, title, start_date, status, card, description) => {
+	update: async (
+		id,
+		title,
+		startDate,
+		status,
+		cardId,
+		description = '',
+		rruleRule = null,
+	) => {
 		const response = await api.put(`/tasks/${id}/update/`, {
 			title,
-			start_date,
+			start_date: startDate,
 			status,
+			card: cardId,
 			description,
-			card: card,
+			rrule_rule: rruleRule,
 		});
 		return response.data;
 	},
