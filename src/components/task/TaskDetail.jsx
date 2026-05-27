@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { translateRRule } from '../../utils/dateHelpers';
 
 function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 	const [showTaskOptions, setShowTaskOptions] = useState(false);
@@ -16,6 +17,8 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 		in_progress: 'В процессе',
 		done: 'Выполнено',
 	};
+
+	const recurrenceText = translateRRule(task.rrule_rule);
 
 	return (
 		<div>
@@ -49,11 +52,9 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 			<p>
 				<strong>Дата выполнения:</strong> {formattedDate}
 			</p>
-			{task.rrule_rule && (
-				<p>
-					<strong>Повторение (RRule):</strong> {task.rrule_rule}
-				</p>
-			)}
+			<p>
+				<strong>Периодичность:</strong> {recurrenceText}
+			</p>
 		</div>
 	);
 }
