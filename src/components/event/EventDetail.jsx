@@ -1,19 +1,18 @@
 import React from 'react';
 
 function EventDetail({ event, onLeaveEvent, onUpdateEvent, onDeleteEvent }) {
-	const formattedDate = new Date(event.event_date).toLocaleDateString(
-		'ru-RU',
-		{
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric',
-		},
-	);
+	const formattedDate = event.date_happened
+		? new Date(event.date_happened).toLocaleDateString('ru-RU', {
+				day: 'numeric',
+				month: 'long',
+				year: 'numeric',
+			})
+		: 'Дата не указана';
 
 	return (
 		<div className="event-detail-container">
 			<header className="event-navigation-header">
-				<button onClick={onLeaveEvent}>← Назад к карточке</button>
+				<button onClick={onLeaveEvent}>Назад к карточке</button>
 				{' | '}
 				<button onClick={() => onUpdateEvent(event)}>
 					Редактировать

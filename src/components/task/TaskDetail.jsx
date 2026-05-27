@@ -3,6 +3,14 @@ import React, { useState } from 'react';
 function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 	const [showTaskOptions, setShowTaskOptions] = useState(false);
 
+	const formattedDate = task.start_date
+		? new Date(task.start_date).toLocaleDateString('ru-RU', {
+				day: 'numeric',
+				month: 'long',
+				year: 'numeric',
+			})
+		: 'Дата не указана';
+
 	const statusLabels = {
 		todo: 'Запланировано',
 		in_progress: 'В процессе',
@@ -39,7 +47,7 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 				{statusLabels[task.status] || task.status || 'Не указан'}
 			</p>
 			<p>
-				<strong>Дата начала:</strong> {task.start_date || 'Не задана'}
+				<strong>Дата выполнения:</strong> {formattedDate}
 			</p>
 			{task.rrule_rule && (
 				<p>
