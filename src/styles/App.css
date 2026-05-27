@@ -58,6 +58,24 @@
 	text-decoration: underline;
 }
 
+/* ===== СЕКЦИЯ КАТЕГОРИЙ (CategoryList / CategoryDetail) ===== */
+.category-list-item {
+	cursor: pointer;
+	padding: 8px 0;
+	list-style-type: none;
+}
+
+.category-list-link {
+	color: #000000;
+	font-weight: 500;
+	transition: color 0.2s ease;
+}
+
+.category-list-item:hover .category-list-link {
+	color: blue;
+	text-decoration: underline;
+}
+
 /* ===== СЕКЦИЯ ЗАДАЧ (TaskList / TaskDetail / Banners) ===== */
 .task-navigation-header {
 	margin-bottom: 10px;

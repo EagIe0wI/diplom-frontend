@@ -3,7 +3,7 @@ import CardFilter from './CardFilter';
 import CategoryFilter from '../category/CategoryFilter';
 import CardList from './CardList';
 
-function CardSection({
+function CardView({
 	cards,
 	categories,
 	loadingCards,
@@ -30,4 +30,4 @@ function CardSection({
 	);
 }
 
-export default CardSection;
+export default CardView;

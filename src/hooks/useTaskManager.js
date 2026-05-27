@@ -11,29 +11,25 @@ import {
 
 export const useTaskManager = () => {
 	const [cards, setCards] = useState([]);
-	const [loadingCards, setLoadingCards] = useState(false);
-
 	const [categories, setCategories] = useState([]);
-	const [currentCategory, setCurrentCategory] = useState('');
-
 	const [tasks, setTasks] = useState([]);
-	const [loadingTasks, setLoadingTasks] = useState(false);
+	const [events, setEvents] = useState([]);
+	const [allEvents, setAllEvents] = useState([]);
 	const [allTasks, setAllTasks] = useState([]);
 	const [todayTasks, setTodayTasks] = useState([]);
 	const [overdueTasks, setOverdueTasks] = useState([]);
-
 	const [currentTab, setCurrentTab] = useState('cards');
 	const [sortBy, setSortBy] = useState('card');
+	const [currentCategory, setCurrentCategory] = useState('');
 	const [currentSearch, setCurrentSearch] = useState('');
-
+	const [username, setUsername] = useState('');
+	const [loadingCards, setLoadingCards] = useState(false);
+	const [loadingTasks, setLoadingTasks] = useState(false);
+	const [loadingEvents, setLoadingEvents] = useState(false);
 	const [activeCard, setActiveCard] = useState(null);
 	const [activeTask, setActiveTask] = useState(null);
-
-	const [events, setEvents] = useState([]);
+	const [activeCategory, setActiveCategory] = useState(null);
 	const [activeEvent, setActiveEvent] = useState(null);
-	const [loadingEvents, setLoadingEvents] = useState(false);
-
-	const [username, setUsername] = useState('');
 	const [formConfig, setFormConfig] = useState(null);
 
 	const navigate = useNavigate();
@@ -44,27 +40,45 @@ export const useTaskManager = () => {
 			categoryAPI.getAll(),
 			getUserMeAPI(),
 			taskAPI.getAll(),
+			eventAPI.getAll(),
 		])
-			.then(([cardsData, categoryData, userData, allTasksData]) => {
-				const actualCards =
-					cardsData.results || cardsData.cards || cardsData;
-				const actualCategories =
-					categoryData.results ||
-					categoryData.categories ||
-					categoryData;
+			.then(
+				([
+					cardsData,
+					categoryData,
+					userData,
+					allTasksData,
+					allEventsData,
+				]) => {
+					const actualCards =
+						cardsData.results || cardsData.cards || cardsData;
+					const actualCategories =
+						categoryData.results ||
+						categoryData.categories ||
+						categoryData;
 
-				setCards(Array.isArray(actualCards) ? actualCards : []);
-				setCategories(
-					Array.isArray(actualCategories) ? actualCategories : [],
-				);
-				setUsername(userData.username);
+					setCards(Array.isArray(actualCards) ? actualCards : []);
+					setCategories(
+						Array.isArray(actualCategories) ? actualCategories : [],
+					);
+					setUsername(userData.username);
 
-				const actualAllTasks =
-					allTasksData.results || allTasksData.tasks || allTasksData;
-				setAllTasks(
-					Array.isArray(actualAllTasks) ? actualAllTasks : [],
-				);
-			})
+					const actualAllTasks =
+						allTasksData.results ||
+						allTasksData.tasks ||
+						allTasksData;
+					setAllTasks(
+						Array.isArray(actualAllTasks) ? actualAllTasks : [],
+					);
+					const actualAllEvents =
+						allEventsData.results ||
+						allEventsData.events ||
+						allEventsData;
+					setAllEvents(
+						Array.isArray(actualAllEvents) ? actualAllEvents : [],
+					);
+				},
+			)
 			.catch((err) => console.error('Ошибка инициализации данных:', err))
 			.finally(() => setLoadingCards(false));
 
@@ -107,6 +121,7 @@ export const useTaskManager = () => {
 			}
 		} else if (action === 'createEvent') {
 			setEvents((prev) => [...prev, data]);
+			setAllEvents((prevAll) => [...prevAll, data]);
 		} else if (action === 'updateEvent') {
 			setEvents((prev) => prev.map((e) => (e.id === data.id ? data : e)));
 			if (activeEvent && activeEvent.id === data.id) {
@@ -176,6 +191,7 @@ export const useTaskManager = () => {
 		setActiveCard(null);
 		setActiveTask(null);
 		setActiveEvent(null);
+		setActiveCategory(null);
 		setCurrentSearch('');
 		setCurrentCategory('');
 
@@ -355,5 +371,9 @@ export const useTaskManager = () => {
 		activeEvent,
 		setActiveEvent,
 		handleDeleteEvent,
+		allEvents,
+		setAllEvents,
+		activeCategory,
+		setActiveCategory,
 	};
 };

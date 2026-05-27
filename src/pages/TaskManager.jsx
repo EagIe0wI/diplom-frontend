@@ -1,15 +1,19 @@
 import React from 'react';
 import CardFilter from '../components/card/CardFilter';
-import CategoryFilter from '../components/category/CategoryFilter';
 import CardList from '../components/card/CardList';
 import CardDetail from '../components/card/CardDetail';
-import CardSection from '../components/card/CardSection';
+import CardView from '../components/card/CardView';
+import CategoryList from '../components/category/CategoryList';
+import CategoryFilter from '../components/category/CategoryFilter';
+import CategoryView from '../components/category/CategoryView';
+import CategoryDetail from '../components/category/CategoryDetail';
 import TaskList from '../components/task/TaskList';
 import TaskDetail from '../components/task/TaskDetail';
 import TodayTasksbanner from '../components/task/TodayTasksBanner';
 import OverdueTasksBanner from '../components/task/OverdueTasksBanner';
-import CategoryList from '../components/category/CategoryList';
+import AllTasksView from '../components/task/AllTasksView';
 import EventDetail from '../components/event/EventDetail';
+import AllEventsView from '../components/event/AllEventsView';
 import CUForm from './CreateUpdateForm';
 import BaseLayout from '../components/BaseLayout';
 import { useTaskManager } from '../hooks/useTaskManager';
@@ -46,18 +50,14 @@ const TaskManager = () => {
 		handleEnterTodayTask,
 		overdueTasks,
 		events,
+		allEvents,
 		activeEvent,
 		setActiveEvent,
 		handleDeleteEvent,
 		loadingEvents,
+		activeCategory,
+		setActiveCategory,
 	} = useTaskManager();
-
-	const groupedTasks = allTasks.reduce((acc, task) => {
-		const cardId = task.card;
-		if (!acc[cardId]) acc[cardId] = [];
-		acc[cardId].push(task);
-		return acc;
-	}, {});
 
 	const renderCurrentScreen = () => {
 		if (formConfig) {
@@ -71,6 +71,26 @@ const TaskManager = () => {
 					activeCard={activeCard}
 					onSuccess={handleFormSuccess}
 					onCancel={() => setFormConfig(null)}
+				/>
+			);
+		}
+
+		if (activeCategory) {
+			return (
+				<CategoryDetail
+					category={activeCategory}
+					onLeaveCategory={() => setActiveCategory(null)}
+					onDeleteCategory={async (catId) => {
+						await handleDeleteCategory(catId);
+						setActiveCategory(null);
+					}}
+					onUpdateCategory={(catObj) =>
+						setFormConfig({
+							type: 'category',
+							mode: 'update',
+							initialData: catObj,
+						})
+					}
 				/>
 			);
 		}
@@ -95,7 +115,7 @@ const TaskManager = () => {
 			);
 		}
 
-		if (activeCard && activeEvent) {
+		if (activeEvent) {
 			return (
 				<EventDetail
 					event={activeEvent}
@@ -136,7 +156,6 @@ const TaskManager = () => {
 						setFormConfig({ type: 'task', mode: 'create' })
 					}
 					onEnterTask={(taskObj) => setActiveTask(taskObj)}
-					// События
 					events={events}
 					loadingEvents={loadingEvents}
 					onAddEvent={() =>
@@ -163,6 +182,12 @@ const TaskManager = () => {
 						Все задачи
 					</button>
 					<button
+						onClick={() => setCurrentTab('events')}
+						disabled={currentTab === 'events'}
+					>
+						Все события
+					</button>
+					<button
 						onClick={() => setCurrentTab('categories')}
 						disabled={currentTab === 'categories'}
 					>
@@ -186,46 +211,42 @@ const TaskManager = () => {
 				/>
 
 				{currentTab === 'cards' && (
-					<CardSection
+					<CardView
 						cards={cards}
 						categories={categories}
 						loadingCards={loadingCards}
 						onSearchCards={handleSearchCards}
 						onCategoryChange={handleCategoryChange}
 						onCreateCardClick={() =>
-							setFormConfig({ type: null, mode: 'create' })
+							setFormConfig({ type: 'card', mode: 'create' })
 						}
 						onEnterCard={handleEnterCard}
 					/>
 				)}
 
 				{currentTab === 'tasks' && (
-					<div>
-						{Object.keys(groupedTasks).map((cardId) => {
-							const parentCard = cards.find(
-								(c) => c.id === Number(cardId),
-							);
-							const cardTitle = parentCard
-								? parentCard.title
-								: `Карточка (ID: ${cardId})`;
-							return (
-								<div key={cardId}>
-									<h3>{cardTitle}</h3>
-									<TaskList
-										tasks={groupedTasks[cardId]}
-										onEnterTask={handleEnterTodayTask}
-									/>
-								</div>
-							);
-						})}
-					</div>
+					<AllTasksView
+						allTasks={allTasks}
+						cards={cards}
+						onEnterTask={handleEnterTodayTask}
+					/>
+				)}
+
+				{currentTab === 'events' && (
+					<AllEventsView
+						allEvents={allEvents}
+						cards={cards}
+						onEnterEvent={(eventObj) => setActiveEvent(eventObj)}
+					/>
 				)}
 
 				{currentTab === 'categories' && (
-					<CategoryList
+					<CategoryView
 						categories={categories}
-						setFormConfig={setFormConfig}
-						onDeleteCategory={handleDeleteCategory}
+						onCreateCategoryClick={() =>
+							setFormConfig({ type: 'category', mode: 'create' })
+						}
+						onEnterCategory={(catObj) => setActiveCategory(catObj)}
 					/>
 				)}
 			</div>

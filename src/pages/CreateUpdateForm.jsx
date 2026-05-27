@@ -138,9 +138,10 @@ const CUForm = ({
 					);
 					onSuccess({ action: 'createEvent', data: newEvent });
 				} else if (mode === 'update') {
+					const targetCardId = activeCard?.id || initialData?.card;
 					const updatedEvent = await eventAPI.update(
 						initialData.id,
-						activeCard.id,
+						targetCardId,
 						title,
 						eventDate,
 						description,
