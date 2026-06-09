@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { registerAPI } from '../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const RegisterForm = () => {
 	const [username, setUsername] = useState('');
@@ -35,6 +35,13 @@ const RegisterForm = () => {
 				placeholder="Пароль"
 			/>
 			<button type="submit">Создать аккаунт</button>
+			<hr />
+			<div>
+				<span>Есть аккаунт?</span>
+				<Link to="/login" className="auth-link">
+					Войти
+				</Link>
+			</div>
 		</form>
 	);
 };

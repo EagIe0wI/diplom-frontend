@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { loginAPI } from '../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const LoginForm = () => {
 	const [userInput, setUserInput] = useState('');
@@ -47,25 +47,32 @@ const LoginForm = () => {
 
 	return (
 		<form onSubmit={submitForm}>
-			<p>Sign in to continue</p>
+			<p>Войдите для продолжения</p>
 
 			{apiError && <p className="login-form-error">{apiError}</p>}
 
 			<input
 				name="username"
 				value={userInput}
-				placeholder="Username"
+				placeholder="Пользователь"
 				onChange={handleUserInput}
 				className={hasErrors.username ? 'login-form-error' : ''}
 			/>
 			<input
 				type="password"
 				value={passwordInput}
-				placeholder="Password"
+				placeholder="Пароль"
 				onChange={handlePasswordInput}
 				className={hasErrors.password ? 'login-form-error' : ''}
 			/>
-			<input type="submit" value="Log in" />
+			<input type="submit" value="Войти" />
+			<hr />
+			<div>
+				<span>Ещё нет аккаунта?</span>
+				<Link to="/register" className="auth-link">
+					Зарегестрироваться
+				</Link>
+			</div>
 		</form>
 	);
 };
