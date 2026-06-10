@@ -50,10 +50,10 @@ api.interceptors.response.use(
 			error.response.status === 401 &&
 			!originalRequest._retry
 		) {
-			if (originalRequest.url.includes('accounts/token/refresh')) {
+			if (originalRequest.url.includes('/accounts/token/refresh/')) {
 				localStorage.removeItem('access_token');
 				localStorage.removeItem('refresh_token');
-				window.location.href = '/login';
+				window.location.href = '/login/';
 				return Promise.reject(error);
 			}
 
@@ -77,9 +77,12 @@ api.interceptors.response.use(
 
 			if (refreshToken) {
 				try {
-					const response = await api.post('accounts/token/refresh/', {
-						refresh: refreshToken,
-					});
+					const response = await api.post(
+						'/accounts/token/refresh/',
+						{
+							refresh: refreshToken,
+						},
+					);
 
 					const newAccessToken = response.data.access;
 					localStorage.setItem('access_token', newAccessToken);
@@ -105,7 +108,7 @@ api.interceptors.response.use(
 					);
 					localStorage.removeItem('access_token');
 					localStorage.removeItem('refresh_token');
-					window.location.href = '/login';
+					window.location.href = '/login/';
 					return Promise.reject(refreshError);
 				} finally {
 					isRefreshing = false;

@@ -35,7 +35,7 @@ const LoginForm = () => {
 				});
 				setUserInput('');
 				setPasswordInput('');
-				navigate('/tasks');
+				navigate('/tasks/');
 			} catch (err) {
 				console.error('Ошибка при входе:', err);
 				setApiError(
@@ -69,7 +69,7 @@ const LoginForm = () => {
 			<hr />
 			<div>
 				<span>Ещё нет аккаунта?</span>
-				<Link to="/register" className="auth-link">
+				<Link to="/register/" className="auth-link">
 					Зарегестрироваться
 				</Link>
 			</div>
