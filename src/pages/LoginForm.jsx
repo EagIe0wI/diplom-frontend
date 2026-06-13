@@ -47,7 +47,7 @@ const LoginForm = () => {
 
 	return (
 		<form onSubmit={submitForm} className="auth-form-container">
-			<p>Войдите для продолжения</p>
+			<p className="auth-form-title">Войдите для продолжения</p>
 
 			{apiError && <p className="login-form-error">{apiError}</p>}
 

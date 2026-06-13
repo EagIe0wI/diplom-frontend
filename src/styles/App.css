@@ -481,3 +481,108 @@ form button[type="button"]:hover {
 	from { transform: translateY(-20px); opacity: 0; }
 	to { transform: translateY(0); opacity: 1; }
 }
+
+
+/* ===== 10. СТИЛИЗАЦИЯ ЛОГИНА И РЕГИСТРАЦИИ ===== */
+.auth-form-container {
+	max-width: 320px;
+	margin: 15vh auto 0 auto;
+	padding: var(--space-lg);
+	background-color: var(--bg-card);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-sm);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-md);
+	box-shadow: var(--card-shadow);
+}
+
+.auth-form-title,
+.auth-form-container h2 {
+	font-size: 1.1em;
+	font-weight: 600;
+	text-align: center;
+	color: var(--text-main);
+	margin-bottom: var(--space-xs);
+}
+
+p.auth-form-title {
+	font-size: 0.95em;
+	font-weight: 500;
+	opacity: 0.9;
+}
+
+.auth-form-container input[name="username"],
+.auth-form-container input[type="password"],
+.auth-form-container input[placeholder="Логин"] {
+	box-sizing: border-box;
+	width: 100%;
+	background-color: var(--bg-main);
+	color: var(--text-main);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-sm);
+	padding: var(--space-sm);
+	font-size: 0.9em;
+	outline: none;
+	transition: border-color 0.2s;
+}
+
+.auth-form-container input[name="username"]:focus,
+.auth-form-container input[type="password"]:focus,
+.auth-form-container input[placeholder="Логин"]:focus {
+	border-color: var(--accent-color);
+}
+
+.auth-submit-btn,
+.auth-form-container button[type="submit"] {
+	box-sizing: border-box;
+	width: 100%;
+	background-color: var(--accent-color);
+	color: #ffffff;
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	padding: var(--space-sm);
+	font-size: 0.95em;
+	font-weight: 600;
+	cursor: pointer;
+	display: block;
+	text-align: center;
+	transition: background-color 0.2s;
+}
+
+.auth-submit-btn:hover,
+.auth-form-container button[type="submit"]:hover {
+	background-color: var(--border-color);
+}
+
+.auth-divider {
+	border: none;
+	border-top: 1px solid var(--border-color);
+	margin: var(--space-xs) 0;
+}
+
+.auth-footer,
+.auth-form-container div:has(.auth-link) {
+	display: flex;
+	justify-content: center;
+	gap: var(--space-xs);
+	font-size: 0.85em;
+	color: var(--text-main);
+	opacity: 0.8;
+}
+
+.auth-link {
+	color: var(--accent-color);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.auth-link:hover {
+	text-decoration: underline;
+}
+
+.login-form-error-field,
+.auth-form-container .login-form-error {
+	border-color: var(--danger-color) !important;
+	box-shadow: 0 0 0 1px var(--danger-color);
+}
