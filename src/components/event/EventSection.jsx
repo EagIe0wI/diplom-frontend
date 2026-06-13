@@ -13,13 +13,13 @@ function EventSection({
 
 	return (
 		<div className="card-events-section">
-			<div>
-				<span>Поиск задач: </span>
+			<div className="section-controls-block">
+				<span className="search-label">Поиск событий: </span>
 				<EventFilter onSearchChange={onSearchEvents} />
 				<button onClick={onAddEvent}>Добавить запись</button>
 			</div>
 
-			<h3>События:</h3>
+			<h3 className="section-subtitle">События</h3>
 
 			{events.length === 0 ? (
 				<p className="events-empty">Здесь пока ничего не произошло.</p>

@@ -46,7 +46,7 @@ const LoginForm = () => {
 	};
 
 	return (
-		<form onSubmit={submitForm}>
+		<form onSubmit={submitForm} className="auth-form-container">
 			<p>Войдите для продолжения</p>
 
 			{apiError && <p className="login-form-error">{apiError}</p>}
@@ -65,8 +65,8 @@ const LoginForm = () => {
 				onChange={handlePasswordInput}
 				className={hasErrors.password ? 'login-form-error' : ''}
 			/>
-			<input type="submit" value="Войти" />
-			<hr />
+			<input type="submit" value="Войти" className="auth-submit-btn" />
+			<hr className="auth-divider" />
 			<div>
 				<span>Ещё нет аккаунта?</span>
 				<Link to="/register/" className="auth-link">

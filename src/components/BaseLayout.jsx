@@ -3,13 +3,13 @@ import React from 'react';
 function BaseLayout({ username, handleLogout, children }) {
 	return (
 		<div className="task-manager-container">
-			<header>
-				<span>
+			<header className="main-app-header">
+				<span className="user-badge">
 					Пользователь: <strong>{username}</strong>
 				</span>
 				<button onClick={handleLogout}>Выйти</button>
 			</header>
-			<hr /> <main>{children}</main>
+			<main className="main-app-content">{children}</main>
 		</div>
 	);
 }

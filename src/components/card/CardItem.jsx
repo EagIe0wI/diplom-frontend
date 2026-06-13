@@ -8,7 +8,7 @@ function CardItem({ card, onEnterCard }) {
 		<li className="card-list-item" onClick={() => onEnterCard(card)}>
 			<span className="card-list-link">{card.title} ...</span>
 			<div className="card-item-counters">
-				Задач: {tasksCount}, событий: {eventsCount}
+				Задач: {tasksCount} &middot; событий: {eventsCount}
 			</div>
 		</li>
 	);

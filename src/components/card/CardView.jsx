@@ -23,7 +23,9 @@ function CardView({
 				<button onClick={onCreateCardClick}>Создать карточку</button>
 			</div>
 
-			{loadingCards && <p>Загрузка карточек...</p>}
+			{loadingCards && (
+				<p className="loading-state-text">Загрузка карточек...</p>
+			)}
 
 			<CardList cards={cards} onEnterCard={onEnterCard} />
 		</div>

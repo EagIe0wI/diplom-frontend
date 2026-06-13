@@ -3,7 +3,7 @@ import EventItem from './EventItem';
 
 function EventList({ events, onEnterEvent }) {
 	return (
-		<ul className="event-list">
+		<ul className="events-list-container">
 			{events.map((event) => (
 				<EventItem
 					key={event.id}

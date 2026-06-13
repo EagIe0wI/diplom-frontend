@@ -3,7 +3,7 @@ import CardItem from './CardItem';
 
 function CardList({ cards, onEnterCard }) {
 	return (
-		<ul className="card-list">
+		<ul className="card-list-grid">
 			{cards.map((card) => (
 				<CardItem key={card.id} card={card} onEnterCard={onEnterCard} />
 			))}

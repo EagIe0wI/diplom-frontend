@@ -2,7 +2,13 @@ import React from 'react';
 import TaskFilter from './TaskFilter';
 import TaskList from './TaskList';
 
-function AllTasksView({ allTasks, cards, onSearchTasks, onEnterTask }) {
+function AllTasksView({
+	allTasks,
+	cards,
+	onSearchTasks,
+	onEnterTask,
+	onEnterCard,
+}) {
 	const groupedTasks = allTasks.reduce((acc, task) => {
 		const cardId = task.card;
 		if (!acc[cardId]) acc[cardId] = [];
@@ -22,8 +28,17 @@ function AllTasksView({ allTasks, cards, onSearchTasks, onEnterTask }) {
 					: `Карточка (ID: ${cardId})`;
 
 				return (
-					<div key={cardId} className="card-tasks-group">
-						<h3>{cardTitle}</h3>
+					<div key={cardId} className="card-tasks-group-block">
+						<h3
+							className="card-group-title clickable"
+							onClick={() =>
+								parentCard &&
+								onEnterCard &&
+								onEnterCard(parentCard)
+							}
+						>
+							{cardTitle}
+						</h3>
 						<TaskList
 							tasks={groupedTasks[cardId]}
 							onEnterTask={onEnterTask}

@@ -22,8 +22,8 @@ function AllEventsView({ allEvents, cards, onSearchEvents, onEnterEvent }) {
 					? parentCard.title
 					: `Карточка (ID: ${cardId})`;
 				return (
-					<div key={cardId} className="card-events-group">
-						<h3>{cardTitle}</h3>
+					<div key={cardId} className="card-events-group-block">
+						<h3 className="card-group-title">{cardTitle}</h3>
 						<EventList
 							events={groupedEvents[cardId]}
 							onEnterEvent={onEnterEvent}

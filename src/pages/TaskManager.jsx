@@ -14,51 +14,62 @@ import OverdueTasksBanner from '../components/task/OverdueTasksBanner';
 import AllTasksView from '../components/task/AllTasksView';
 import EventDetail from '../components/event/EventDetail';
 import AllEventsView from '../components/event/AllEventsView';
-import CUForm from './CreateUpdateForm';
+import CUForm from '../components/CreateUpdateForm';
 import BaseLayout from '../components/BaseLayout';
 import { useTaskManager } from '../hooks/useTaskManager';
 
 const TaskManager = () => {
 	const {
+		// --- КАРТОЧКИ ---
 		cards,
-		categories,
-		tasks,
-		allTasks,
-		currentTab,
-		setCurrentTab,
 		activeCard,
-		activeTask,
-		setActiveTask,
 		loadingCards,
-		loadingTasks,
-		username,
-		formConfig,
-		setFormConfig,
-		handleLogout,
 		handleSearchCards,
-		handleCategoryChange,
-		handleDeleteCategory,
 		handleDeleteCard,
 		handleEnterCard,
 		handleLeaveCard,
-		handleSearchTasks,
-		handleDeleteTask,
-		handleFormSuccess,
-		handleSearchEvents,
+
+		// --- ЗАДАЧИ ---
+		tasks,
+		allTasks,
 		todayTasks,
+		overdueTasks,
+		activeTask,
+		setActiveTask,
+		loadingTasks,
+		handleSearchTasks,
+		handleSearchCardTasks,
+		handleDeleteTask,
 		handleCompleteTodayTask,
 		handlePostponeTodayTask,
 		handleEnterTodayTask,
-		overdueTasks,
+
+		// --- СОБЫТИЯ ---
 		events,
 		allEvents,
 		activeEvent,
 		setActiveEvent,
-		handleDeleteEvent,
 		loadingEvents,
+		handleSearchCardEvents,
+		handleSearchEvents,
+		handleDeleteEvent,
+
+		// --- КАТЕГОРИИ ---
+		categories,
 		activeCategory,
 		setActiveCategory,
+		handleDeleteCategory,
 		handleSearchCategory,
+		handleCategoryChange,
+
+		// --- СИСТЕМНОЕ И UI ---
+		username,
+		currentTab,
+		setCurrentTab,
+		formConfig,
+		setFormConfig,
+		handleFormSuccess,
+		handleLogout,
 	} = useTaskManager();
 
 	const renderCurrentScreen = () => {
@@ -153,7 +164,7 @@ const TaskManager = () => {
 					}
 					tasks={tasks}
 					loadingTasks={loadingTasks}
-					onSearchTasks={handleSearchTasks}
+					onSearchTasks={handleSearchCardTasks}
 					onAddTask={() =>
 						setFormConfig({ type: 'task', mode: 'create' })
 					}
@@ -164,96 +175,115 @@ const TaskManager = () => {
 						setFormConfig({ type: 'event', mode: 'create' })
 					}
 					onEnterEvent={(eventObj) => setActiveEvent(eventObj)}
+					onSearchEvents={handleSearchCardEvents}
 				/>
 			);
 		}
 
 		return (
-			<div>
-				<nav>
+			<div className="task-manager-container">
+				{/* Навигационная панель табов */}
+				<nav className="tab-navigation">
 					<button
+						className={currentTab === 'cards' ? 'active' : ''}
 						onClick={() => setCurrentTab('cards')}
 						disabled={currentTab === 'cards'}
 					>
 						Карточки
 					</button>
 					<button
+						className={currentTab === 'tasks' ? 'active' : ''}
 						onClick={() => setCurrentTab('tasks')}
 						disabled={currentTab === 'tasks'}
 					>
 						Все задачи
 					</button>
 					<button
+						className={currentTab === 'events' ? 'active' : ''}
 						onClick={() => setCurrentTab('events')}
 						disabled={currentTab === 'events'}
 					>
 						Все события
 					</button>
 					<button
+						className={currentTab === 'categories' ? 'active' : ''}
 						onClick={() => setCurrentTab('categories')}
 						disabled={currentTab === 'categories'}
 					>
 						Категории
 					</button>
 				</nav>
-				<hr />
 
-				<TodayTasksbanner
-					todayTasks={todayTasks}
-					onEnterTodayTask={handleEnterTodayTask}
-					onCompleteTodayTask={handleCompleteTodayTask}
-					onPostponeTodayTask={handlePostponeTodayTask}
-				/>
-
-				<OverdueTasksBanner
-					overdueTasks={overdueTasks}
-					onEnterTodayTask={handleEnterTodayTask}
-					onCompleteTodayTask={handleCompleteTodayTask}
-					onPostponeTodayTask={handlePostponeTodayTask}
-				/>
-
-				{currentTab === 'cards' && (
-					<CardView
-						cards={cards}
-						categories={categories}
-						loadingCards={loadingCards}
-						onSearchCards={handleSearchCards}
-						onCategoryChange={handleCategoryChange}
-						onCreateCardClick={() =>
-							setFormConfig({ type: 'card', mode: 'create' })
-						}
-						onEnterCard={handleEnterCard}
+				{/* Блок баннеров (отступы внутри баннеров теперь управляются из App.css) */}
+				<div className="banners-holder">
+					<TodayTasksbanner
+						todayTasks={todayTasks}
+						onEnterTodayTask={handleEnterTodayTask}
+						onCompleteTodayTask={handleCompleteTodayTask}
+						onPostponeTodayTask={handlePostponeTodayTask}
 					/>
-				)}
 
-				{currentTab === 'tasks' && (
-					<AllTasksView
-						allTasks={allTasks}
-						cards={cards}
-						onSearchTasks={handleSearchTasks}
-						onEnterTask={handleEnterTodayTask}
+					<OverdueTasksBanner
+						overdueTasks={overdueTasks}
+						onEnterTodayTask={handleEnterTodayTask}
+						onCompleteTodayTask={handleCompleteTodayTask}
+						onPostponeTodayTask={handlePostponeTodayTask}
 					/>
-				)}
+				</div>
 
-				{currentTab === 'events' && (
-					<AllEventsView
-						allEvents={allEvents}
-						cards={cards}
-						onSearchEvents={handleSearchEvents}
-						onEnterEvent={(eventObj) => setActiveEvent(eventObj)}
-					/>
-				)}
+				{/* Основной контент выбранного таба */}
+				<div className="tab-content">
+					{currentTab === 'cards' && (
+						<CardView
+							cards={cards}
+							categories={categories}
+							loadingCards={loadingCards}
+							onSearchCards={handleSearchCards}
+							onCategoryChange={handleCategoryChange}
+							onCreateCardClick={() =>
+								setFormConfig({ type: 'card', mode: 'create' })
+							}
+							onEnterCard={handleEnterCard}
+						/>
+					)}
 
-				{currentTab === 'categories' && (
-					<CategoryView
-						categories={categories}
-						handleSearchCategory={handleSearchCategory}
-						onCreateCategoryClick={() =>
-							setFormConfig({ type: 'category', mode: 'create' })
-						}
-						onEnterCategory={(catObj) => setActiveCategory(catObj)}
-					/>
-				)}
+					{currentTab === 'tasks' && (
+						<AllTasksView
+							allTasks={allTasks}
+							cards={cards}
+							onSearchTasks={handleSearchTasks}
+							onEnterTask={handleEnterTodayTask}
+							onEnterCard={handleEnterCard}
+						/>
+					)}
+
+					{currentTab === 'events' && (
+						<AllEventsView
+							allEvents={allEvents}
+							cards={cards}
+							onSearchEvents={handleSearchEvents}
+							onEnterEvent={(eventObj) =>
+								setActiveEvent(eventObj)
+							}
+						/>
+					)}
+
+					{currentTab === 'categories' && (
+						<CategoryView
+							categories={categories}
+							handleSearchCategory={handleSearchCategory}
+							onCreateCategoryClick={() =>
+								setFormConfig({
+									type: 'category',
+									mode: 'create',
+								})
+							}
+							onEnterCategory={(catObj) =>
+								setActiveCategory(catObj)
+							}
+						/>
+					)}
+				</div>
 			</div>
 		);
 	};

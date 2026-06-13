@@ -10,30 +10,40 @@ import {
 } from '../api';
 
 export const useTaskManager = () => {
+	// --- 1. КАРТОЧКИ ---
 	const [cards, setCards] = useState([]);
-	const [categories, setCategories] = useState([]);
+	const [activeCard, setActiveCard] = useState(null);
+	const [loadingCards, setLoadingCards] = useState(false);
+
+	// --- 2. ЗАДАЧИ ---
 	const [tasks, setTasks] = useState([]);
-	const [events, setEvents] = useState([]);
-	const [allEvents, setAllEvents] = useState([]);
 	const [allTasks, setAllTasks] = useState([]);
 	const [todayTasks, setTodayTasks] = useState([]);
 	const [overdueTasks, setOverdueTasks] = useState([]);
-	const [currentTab, setCurrentTab] = useState('cards');
-	const [sortBy, setSortBy] = useState('card');
-	const [currentCategory, setCurrentCategory] = useState('');
-	const [currentSearch, setCurrentSearch] = useState('');
-	const [username, setUsername] = useState('');
-	const [loadingCards, setLoadingCards] = useState(false);
-	const [loadingTasks, setLoadingTasks] = useState(false);
-	const [loadingEvents, setLoadingEvents] = useState(false);
-	const [activeCard, setActiveCard] = useState(null);
 	const [activeTask, setActiveTask] = useState(null);
-	const [activeCategory, setActiveCategory] = useState(null);
+	const [loadingTasks, setLoadingTasks] = useState(false);
+
+	// --- 3. СОБЫТИЯ ---
+	const [events, setEvents] = useState([]);
+	const [allEvents, setAllEvents] = useState([]);
 	const [activeEvent, setActiveEvent] = useState(null);
+	const [loadingEvents, setLoadingEvents] = useState(false);
+
+	// --- 4. КАТЕГОРИИ ---
+	const [categories, setCategories] = useState([]);
+	const [activeCategory, setActiveCategory] = useState(null);
+	const [currentCategory, setCurrentCategory] = useState('');
+
+	// --- 5. СИСТЕМНОЕ И UI (Навигация, Поиск, Формы) ---
+	const [username, setUsername] = useState('');
+	const [currentTab, setCurrentTab] = useState('cards');
+	const [currentSearch, setCurrentSearch] = useState('');
 	const [formConfig, setFormConfig] = useState(null);
+	const [sortBy, setSortBy] = useState('card');
 
 	const navigate = useNavigate();
 
+	// ===== ГЛОБАЛЬНЫЙ СТАРТ (ИНИЦИАЛИЗАЦИЯ) ===== //
 	useEffect(() => {
 		Promise.all([
 			cardAPI.getAll(),
@@ -70,6 +80,7 @@ export const useTaskManager = () => {
 					setAllTasks(
 						Array.isArray(actualAllTasks) ? actualAllTasks : [],
 					);
+
 					const actualAllEvents =
 						allEventsData.results ||
 						allEventsData.events ||
@@ -85,13 +96,244 @@ export const useTaskManager = () => {
 		fetchTodayBannerTasks();
 	}, []);
 
-	const handleLogout = async () => {
-		if (confirm('Выйти?')) {
-			await logoutAPI();
-			navigate('/login');
+	// ===== БЛОК КАРТОЧЕК ===== //
+	const fetchFilteredCards = async (search, categoryId) => {
+		setLoadingCards(true);
+		try {
+			const cardsData = await cardAPI.getAll(search, categoryId);
+			const actualCards =
+				cardsData.results || cardsData.cards || cardsData;
+			setCards(Array.isArray(actualCards) ? actualCards : []);
+		} finally {
+			setLoadingCards(false);
 		}
 	};
 
+	const handleSearchCards = async (searchText) => {
+		setCurrentSearch(searchText);
+		fetchFilteredCards(searchText, currentCategory);
+	};
+
+	const handleCategoryChange = (categoryId) => {
+		setCurrentCategory(categoryId);
+		fetchFilteredCards(currentSearch, categoryId);
+	};
+
+	const handleEnterCard = async (card) => {
+		setActiveCard(card);
+		setLoadingTasks(true);
+		setLoadingEvents(true);
+		setTasks([]);
+		setEvents([]);
+		try {
+			const [tasksData, eventsData] = await Promise.all([
+				taskAPI.getAll(card.id),
+				eventAPI.getAll(card.id),
+			]);
+			const actualTasks =
+				tasksData.results || tasksData.tasks || tasksData;
+			setTasks(Array.isArray(actualTasks) ? actualTasks : []);
+			const actualEvents =
+				eventsData.results || eventsData.events || eventsData;
+			setEvents(Array.isArray(actualEvents) ? actualEvents : []);
+		} catch (err) {
+			console.error('Ошибка загрузки данных карточки:', err);
+		} finally {
+			setLoadingTasks(false);
+			setLoadingEvents(false);
+		}
+	};
+
+	const handleLeaveCard = () => {
+		setActiveCard(null);
+		setActiveTask(null);
+		setActiveEvent(null);
+		setActiveCategory(null);
+		setCurrentSearch('');
+		setCurrentCategory('');
+
+		taskAPI.getAll().then((data) => {
+			const actualAllTasks = data.results || data.tasks || data;
+			setAllTasks(Array.isArray(actualAllTasks) ? actualAllTasks : []);
+		});
+		fetchFilteredCards('', '');
+	};
+
+	const handleDeleteCard = async (cardId) => {
+		if (!confirm('Удалить карточку?')) return;
+		try {
+			await cardAPI.delete(cardId);
+			setCards((prev) => prev.filter((c) => c.id !== cardId));
+			setAllTasks((prev) => prev.filter((t) => t.card !== cardId));
+			setActiveCard(null);
+			setTasks([]);
+		} catch (err) {
+			console.error('Ошибка при удалении карточки:', err);
+		}
+	};
+
+	// ===== БЛОК ЗАДАЧ ===== //
+	const fetchTodayBannerTasks = async () => {
+		try {
+			const localIsoDate = new Date().toISOString().split('T')[0];
+			const [todayData, overdueData] = await Promise.all([
+				taskAPI.getToday(localIsoDate),
+				taskAPI.getOverdue(localIsoDate),
+			]);
+			setTodayTasks(todayData.results || todayData);
+			setOverdueTasks(overdueData.results || overdueData);
+		} catch (err) {
+			console.error('Ошибка обновления баннеров:', err);
+		}
+	};
+
+	const handleSearchTasks = async (searchText) => {
+		try {
+			const data = await taskAPI.getAll(null, searchText);
+			const actualTasks = data.results || data.tasks || data;
+			setAllTasks(Array.isArray(actualTasks) ? actualTasks : []);
+		} catch (err) {
+			console.error('Ошибка глобального поиска задач:', err);
+		}
+	};
+
+	const handleSearchCardTasks = async (searchText) => {
+		if (!activeCard) return;
+		try {
+			const data = await taskAPI.getAll(activeCard.id, searchText);
+			const actualTasks = data.results || data.tasks || data;
+			setTasks(Array.isArray(actualTasks) ? actualTasks : []);
+		} catch (err) {
+			console.error('Ошибка контекстного поиска задач:', err);
+		}
+	};
+
+	const handleEnterTodayTask = async (task) => {
+		const parentCard = cards.find((c) => c.id === task.card);
+		if (parentCard) {
+			setActiveCard(parentCard);
+			setLoadingTasks(true);
+			try {
+				const tasksData = await taskAPI.getAll(parentCard.id);
+				const actualTasks =
+					tasksData.results || tasksData.tasks || tasksData;
+				setTasks(Array.isArray(actualTasks) ? actualTasks : []);
+			} catch (err) {
+				console.error(err);
+			} finally {
+				setLoadingTasks(false);
+			}
+		}
+		setActiveTask(task);
+	};
+
+	const handleDeleteTask = async (taskId) => {
+		try {
+			await taskAPI.delete(taskId);
+			setTasks((prev) => prev.filter((t) => t.id !== taskId));
+			setAllTasks((prev) => prev.filter((t) => t.id !== taskId));
+			setTodayTasks((prev) => prev.filter((t) => t.id !== taskId));
+		} catch (err) {
+			console.error('Ошибка при удалении задачки:', err);
+		}
+	};
+
+	const handleCompleteTodayTask = async (task) => {
+		try {
+			await taskAPI.update(
+				task.id,
+				task.title,
+				task.start_date,
+				'done',
+				task.card,
+				task.description,
+			);
+			await fetchTodayBannerTasks();
+			setAllTasks((prevAll) =>
+				prevAll.map((t) =>
+					t.id === task.id ? { ...t, status: 'done' } : t,
+				),
+			);
+		} catch (err) {
+			console.error('Не удалось выполнить задачу:', err);
+		}
+	};
+
+	const handlePostponeTodayTask = async (task) => {
+		try {
+			const tomorrow = new Date();
+			tomorrow.setDate(tomorrow.getDate() + 1);
+			const formattedTomorrowDate = tomorrow.toISOString().split('T')[0];
+			await taskAPI.update(
+				task.id,
+				task.title,
+				formattedTomorrowDate,
+				task.status,
+				task.card,
+				task.description,
+			);
+			await fetchTodayBannerTasks();
+		} catch (err) {
+			console.error('Не удалось отложить задачу:', err);
+		}
+	};
+
+	// ===== БЛОК СОБЫТИЙ ===== //
+	const handleSearchEvents = async (searchText) => {
+		try {
+			const data = await eventAPI.getAll(null, searchText);
+			const actualEvents = data.results || data.events || data;
+			setAllEvents(Array.isArray(actualEvents) ? actualEvents : []);
+		} catch (err) {
+			console.error('Ошибка поиска событий:', err);
+		}
+	};
+
+	const handleSearchCardEvents = async (searchText) => {
+		if (!activeCard) return;
+		try {
+			const data = await eventAPI.getAll(activeCard.id, searchText);
+			const actualEvents = data.results || data.events || data;
+			setEvents(Array.isArray(actualEvents) ? actualEvents : []);
+		} catch (err) {
+			console.error('Ошибка контекстного поиска событий:', err);
+		}
+	};
+
+	const handleDeleteEvent = async (eventId) => {
+		if (!confirm('Удалить запись из дневника?')) return;
+		try {
+			await eventAPI.delete(eventId);
+			setEvents((prev) => prev.filter((e) => e.id !== eventId));
+		} catch (err) {
+			console.error('Ошибка при удалении события:', err);
+		}
+	};
+
+	// ===== БЛОК КАТЕГОРИЙ ===== //
+	const handleSearchCategory = async (searchText) => {
+		try {
+			const data = await categoryAPI.getAll(searchText);
+			const actualCategories = data.results || data.categories || data;
+			setCategories(
+				Array.isArray(actualCategories) ? actualCategories : [],
+			);
+		} catch (err) {
+			console.error('Ошибка поиска категорий:', err);
+		}
+	};
+
+	const handleDeleteCategory = async (catId) => {
+		if (!confirm('Вы уверены, что хотите удалить эту категорию?')) return;
+		try {
+			await categoryAPI.delete(catId);
+			setCategories((prev) => prev.filter((c) => c.id !== catId));
+		} catch (err) {
+			console.error('Ошибка при удалении категории:', err);
+		}
+	};
+
+	// ===== СИСТЕМНЫЕ ХЭНДЛЕРЫ И UI ===== //
 	const handleFormSuccess = ({ action, data }) => {
 		setFormConfig(null);
 		if (action === 'createCard') {
@@ -131,264 +373,69 @@ export const useTaskManager = () => {
 		setFormConfig(null);
 	};
 
-	const fetchFilteredCards = async (search, categoryId) => {
-		setLoadingCards(true);
-		try {
-			const cardsData = await cardAPI.getAll(search, categoryId);
-			const actualCards =
-				cardsData.results || cardsData.cards || cardsData;
-			setCards(Array.isArray(actualCards) ? actualCards : []);
-		} finally {
-			setLoadingCards(false);
-		}
-	};
-
-	const handleSearchCards = async (searchText) => {
-		setCurrentSearch(searchText);
-		fetchFilteredCards(searchText, currentCategory);
-	};
-
-	const handleDeleteCard = async (cardId) => {
-		if (!confirm('Удалить карточку?')) return;
-		try {
-			await cardAPI.delete(cardId);
-			setCards((prev) => prev.filter((c) => c.id !== cardId));
-			setAllTasks((prev) => prev.filter((t) => t.card !== cardId));
-			setActiveCard(null);
-			setTasks([]);
-		} catch (err) {
-			console.error('Ошибка при удалении карточки:', err);
-		}
-	};
-
-	const handleEnterCard = async (card) => {
-		setActiveCard(card);
-		setLoadingTasks(true);
-		setLoadingEvents(true);
-		setTasks([]);
-		setEvents([]);
-		try {
-			const [tasksData, eventsData] = await Promise.all([
-				taskAPI.getAll(card.id),
-				eventAPI.getAll(card.id),
-			]);
-
-			const actualTasks =
-				tasksData.results || tasksData.tasks || tasksData;
-			setTasks(Array.isArray(actualTasks) ? actualTasks : []);
-			const actualEvents =
-				eventsData.results || eventsData.events || eventsData;
-			setEvents(Array.isArray(actualEvents) ? actualEvents : []);
-		} catch (err) {
-			console.error('Ошибка загрузки данных карточки:', err);
-		} finally {
-			setLoadingTasks(false);
-			setLoadingEvents(false);
-		}
-	};
-
-	const handleLeaveCard = () => {
-		setActiveCard(null);
-		setActiveTask(null);
-		setActiveEvent(null);
-		setActiveCategory(null);
-		setCurrentSearch('');
-		setCurrentCategory('');
-
-		taskAPI.getAll().then((data) => {
-			const actualAllTasks = data.results || data.tasks || data;
-			setAllTasks(Array.isArray(actualAllTasks) ? actualAllTasks : []);
-		});
-		fetchFilteredCards('', '');
-	};
-
-	const handleCategoryChange = (categoryId) => {
-		setCurrentCategory(categoryId);
-		fetchFilteredCards(currentSearch, categoryId);
-	};
-
-	const handleDeleteCategory = async (catId) => {
-		if (!confirm('Вы уверены, что хотите удалить эту категорию?')) return;
-		try {
-			await categoryAPI.delete(catId);
-			setCategories((prev) => prev.filter((c) => c.id !== catId));
-		} catch (err) {
-			console.error('Ошибка при удалении категории:', err);
-		}
-	};
-
-	const handleSearchCategory = async (searchText) => {
-		try {
-			const data = await categoryAPI.getAll(searchText);
-			const actualCategories = data.results || data.categories || data;
-			setCategories(
-				Array.isArray(actualCategories) ? actualCategories : [],
-			);
-		} catch (err) {
-			console.error('Ошибка поиска категорий:', err);
-		}
-	};
-
-	const handleSearchTasks = async (searchText) => {
-		try {
-			const data = await taskAPI.getAll(null, searchText);
-			const actualTasks = data.results || data.tasks || data;
-			setAllTasks(Array.isArray(actualTasks) ? actualTasks : []);
-		} catch (err) {
-			console.error('Ошибка поиска задач:', err);
-		}
-	};
-
-	const handleDeleteTask = async (taskId) => {
-		try {
-			await taskAPI.delete(taskId);
-			setTasks((prev) => prev.filter((t) => t.id !== taskId));
-			setAllTasks((prev) => prev.filter((t) => t.id !== taskId));
-			setTodayTasks((prev) => prev.filter((t) => t.id !== taskId));
-		} catch (err) {
-			console.error('Ошибка при удалении задачки:', err);
-		}
-	};
-
-	const fetchTodayBannerTasks = async () => {
-		try {
-			const localIsoDate = new Date().toISOString().split('T')[0];
-			const [todayData, overdueData] = await Promise.all([
-				taskAPI.getToday(localIsoDate),
-				taskAPI.getOverdue(localIsoDate),
-			]);
-			setTodayTasks(todayData.results || todayData);
-			setOverdueTasks(overdueData.results || overdueData);
-		} catch (err) {
-			console.error('Ошибка обновления баннеров:', err);
-		}
-	};
-
-	const handleCompleteTodayTask = async (task) => {
-		try {
-			await taskAPI.update(
-				task.id,
-				task.title,
-				task.start_date,
-				'done',
-				task.card,
-				task.description,
-			);
-
-			await fetchTodayBannerTasks();
-
-			setAllTasks((prevAll) =>
-				prevAll.map((t) =>
-					t.id === task.id ? { ...t, status: 'done' } : t,
-				),
-			);
-		} catch (err) {
-			console.error('Не удалось выполнить задачу:', err);
-		}
-	};
-
-	const handlePostponeTodayTask = async (task) => {
-		try {
-			const tomorrow = new Date();
-			tomorrow.setDate(tomorrow.getDate() + 1);
-			const formattedTomorrowDate = tomorrow.toISOString().split('T')[0];
-			await taskAPI.update(
-				task.id,
-				task.title,
-				formattedTomorrowDate,
-				task.status,
-				task.card,
-				task.description,
-			);
-			await fetchTodayBannerTasks();
-		} catch (err) {
-			console.error('Не удалось отложить задачу:', err);
-		}
-	};
-
-	const handleEnterTodayTask = async (task) => {
-		const parentCard = cards.find((c) => c.id === task.card);
-		if (parentCard) {
-			setActiveCard(parentCard);
-			setLoadingTasks(true);
-			try {
-				const tasksData = await taskAPI.getAll(parentCard.id);
-				const actualTasks =
-					tasksData.results || tasksData.tasks || tasksData;
-				setTasks(Array.isArray(actualTasks) ? actualTasks : []);
-			} catch (err) {
-				console.error(err);
-			} finally {
-				setLoadingTasks(false);
-			}
-		}
-		setActiveTask(task);
-	};
-
-	const handleDeleteEvent = async (eventId) => {
-		if (!confirm('Удалить запись из дневника?')) return;
-		try {
-			await eventAPI.delete(eventId); // Метод мы завели в api/event.js на прошлых шагах
-			setEvents((prev) => prev.filter((e) => e.id !== eventId));
-		} catch (err) {
-			console.error('Ошибка при удалении события:', err);
-		}
-	};
-
-	const handleSearchEvents = async (searchText) => {
-		try {
-			const data = await eventAPI.getAll(null, searchText);
-			const actualEvents = data.results || data.events || data;
-			setAllEvents(Array.isArray(actualEvents) ? actualEvents : []);
-		} catch (err) {
-			console.error('Ошибка поиска событий:', err);
+	const handleLogout = async () => {
+		if (confirm('Выйти?')) {
+			await logoutAPI();
+			navigate('/login');
 		}
 	};
 
 	return {
+		// --- 1. КАРТОЧКИ ---
 		cards,
-		categories,
-		tasks,
-		allTasks,
-		currentTab,
-		setCurrentTab,
-		sortBy,
-		setSortBy,
 		activeCard,
-		activeTask,
-		setActiveTask,
 		loadingCards,
-		loadingTasks,
-		username,
-		formConfig,
-		setFormConfig,
-		handleLogout,
 		handleSearchCards,
-		handleCategoryChange,
-		handleDeleteCategory,
 		handleDeleteCard,
 		handleEnterCard,
 		handleLeaveCard,
-		handleSearchTasks,
-		handleDeleteTask,
-		handleFormSuccess,
-		handleSearchEvents,
-		handleSearchCategory,
+
+		// --- 2. ЗАДАЧИ ---
+		tasks,
+		allTasks,
 		todayTasks,
+		overdueTasks,
+		activeTask,
+		setActiveTask,
+		loadingTasks,
+		handleSearchTasks,
+		handleSearchCardTasks,
+		handleDeleteTask,
 		handleCompleteTodayTask,
 		handlePostponeTodayTask,
-		fetchTodayBannerTasks,
 		handleEnterTodayTask,
-		overdueTasks,
+		fetchTodayBannerTasks,
+
+		// --- 3. СОБЫТИЯ ---
 		events,
-		loadingEvents,
-		setEvents,
+		allEvents,
 		activeEvent,
 		setActiveEvent,
-		handleDeleteEvent,
-		allEvents,
+		loadingEvents,
+		setEvents,
 		setAllEvents,
+		handleSearchCardEvents,
+		handleSearchEvents,
+		handleDeleteEvent,
+
+		// --- 4. КАТЕГОРИИ ---
+		categories,
 		activeCategory,
 		setActiveCategory,
+		currentCategory,
+		handleDeleteCategory,
+		handleSearchCategory,
+		handleCategoryChange,
+
+		// --- 5. СИСТЕМНОЕ И UI ---
+		username,
+		currentTab,
+		setCurrentTab,
+		formConfig,
+		setFormConfig,
+		handleFormSuccess,
+		handleLogout,
+		sortBy,
+		setSortBy,
 	};
 };
