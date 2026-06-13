@@ -9,9 +9,9 @@ import CategoryView from '../components/category/CategoryView';
 import CategoryDetail from '../components/category/CategoryDetail';
 import TaskList from '../components/task/TaskList';
 import TaskDetail from '../components/task/TaskDetail';
-import TodayTasksbanner from '../components/task/TodayTasksBanner';
-import OverdueTasksBanner from '../components/task/OverdueTasksBanner';
-import AllTasksView from '../components/task/AllTasksView';
+import TasksTodayView from '../components/task/TasksTodayView';
+import TasksOverdueView from '../components/task/TasksOverdueView';
+import TasksView from '../components/task/TasksView';
 import EventDetail from '../components/event/EventDetail';
 import AllEventsView from '../components/event/AllEventsView';
 import CUForm from '../components/CreateUpdateForm';
@@ -72,22 +72,7 @@ const TaskManager = () => {
 		handleLogout,
 	} = useTaskManager();
 
-	const renderCurrentScreen = () => {
-		if (formConfig) {
-			return (
-				<CUForm
-					key={`${formConfig.type}-${formConfig.mode}-${formConfig.initialData?.id || 'new'}`}
-					type={formConfig.type}
-					mode={formConfig.mode}
-					initialData={formConfig.initialData}
-					categories={categories}
-					activeCard={activeCard}
-					onSuccess={handleFormSuccess}
-					onCancel={() => setFormConfig(null)}
-				/>
-			);
-		}
-
+	const renderMainContent = () => {
 		if (activeCategory) {
 			return (
 				<CategoryDetail
@@ -182,15 +167,33 @@ const TaskManager = () => {
 
 		return (
 			<div className="task-manager-container">
-				{/* Навигационная панель табов */}
 				<nav className="tab-navigation">
 					<button
 						className={currentTab === 'cards' ? 'active' : ''}
 						onClick={() => setCurrentTab('cards')}
 						disabled={currentTab === 'cards'}
 					>
-						Карточки
+						Все карточки
 					</button>
+
+					<button
+						className={currentTab === 'today' ? 'active' : ''}
+						onClick={() => setCurrentTab('today')}
+						disabled={currentTab === 'today'}
+					>
+						Задачи на сегодня
+					</button>
+
+					{overdueTasks && overdueTasks.length > 0 && (
+						<button
+							className={currentTab === 'overdue' ? 'active' : ''}
+							onClick={() => setCurrentTab('overdue')}
+							disabled={currentTab === 'overdue'}
+						>
+							Просроченные задачи
+						</button>
+					)}
+
 					<button
 						className={currentTab === 'tasks' ? 'active' : ''}
 						onClick={() => setCurrentTab('tasks')}
@@ -210,28 +213,10 @@ const TaskManager = () => {
 						onClick={() => setCurrentTab('categories')}
 						disabled={currentTab === 'categories'}
 					>
-						Категории
+						Все категории
 					</button>
 				</nav>
 
-				{/* Блок баннеров (отступы внутри баннеров теперь управляются из App.css) */}
-				<div className="banners-holder">
-					<TodayTasksbanner
-						todayTasks={todayTasks}
-						onEnterTodayTask={handleEnterTodayTask}
-						onCompleteTodayTask={handleCompleteTodayTask}
-						onPostponeTodayTask={handlePostponeTodayTask}
-					/>
-
-					<OverdueTasksBanner
-						overdueTasks={overdueTasks}
-						onEnterTodayTask={handleEnterTodayTask}
-						onCompleteTodayTask={handleCompleteTodayTask}
-						onPostponeTodayTask={handlePostponeTodayTask}
-					/>
-				</div>
-
-				{/* Основной контент выбранного таба */}
 				<div className="tab-content">
 					{currentTab === 'cards' && (
 						<CardView
@@ -247,8 +232,56 @@ const TaskManager = () => {
 						/>
 					)}
 
+					{currentTab === 'today' &&
+						(todayTasks && todayTasks.length > 0 ? (
+							<div className="tasks-list-container">
+								<h3 className="section-subtitle">
+									Необходимо выполнить сегодня (
+									{todayTasks.length}):
+								</h3>
+								<TasksView
+									allTasks={[...todayTasks].sort((a, b) =>
+										a.status === 'done'
+											? 1
+											: b.status === 'done'
+												? -1
+												: 0,
+									)}
+									cards={cards}
+									onEnterTask={handleEnterTodayTask}
+									onEnterCard={handleLeaveCard}
+									onCompleteTask={handleCompleteTodayTask}
+									onPostponeTask={handlePostponeTodayTask}
+									hideFilter={false}
+									onSearchTasks={handleSearchTasks}
+								/>
+							</div>
+						) : (
+							<p className="tasks-empty">
+								На сегодня ничего не запланировано.
+							</p>
+						))}
+
+					{currentTab === 'overdue' && (
+						<div className="tasks-list-container">
+							<h3 className="section-subtitle overdue-title">
+								Просроченные задачи ({overdueTasks.length}):
+							</h3>
+							<TasksView
+								allTasks={overdueTasks}
+								cards={cards}
+								onEnterTask={handleEnterTodayTask}
+								onEnterCard={handleLeaveCard}
+								onCompleteTask={handleCompleteTodayTask}
+								onPostponeTask={handlePostponeTodayTask}
+								hideFilter={false}
+								onSearchTasks={handleSearchTasks}
+							/>
+						</div>
+					)}
+
 					{currentTab === 'tasks' && (
-						<AllTasksView
+						<TasksView
 							allTasks={allTasks}
 							cards={cards}
 							onSearchTasks={handleSearchTasks}
@@ -290,7 +323,22 @@ const TaskManager = () => {
 
 	return (
 		<BaseLayout username={username} handleLogout={handleLogout}>
-			{renderCurrentScreen()}
+			{renderMainContent()}
+
+			{formConfig && (
+				<div className="modal-overlay">
+					<CUForm
+						key={`${formConfig.type}-${formConfig.mode}-${formConfig.initialData?.id || 'new'}`}
+						type={formConfig.type}
+						mode={formConfig.mode}
+						initialData={formConfig.initialData}
+						categories={categories}
+						activeCard={activeCard}
+						onSuccess={handleFormSuccess}
+						onCancel={() => setFormConfig(null)}
+					/>
+				</div>
+			)}
 		</BaseLayout>
 	);
 };

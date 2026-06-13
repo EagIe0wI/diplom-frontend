@@ -7,7 +7,7 @@ function CategoryList({ categories, onEnterCategory }) {
 	}
 
 	return (
-		<ul className="category-list">
+		<ul className="card-list-grid">
 			{categories.map((cat) => (
 				<CategoryItem
 					key={cat.id}

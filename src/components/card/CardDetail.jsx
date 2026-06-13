@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TaskSection from '../task/TaskSection';
 import EventSection from '../event/EventSection';
 
@@ -19,9 +19,8 @@ function CardDetail({
 	onEnterEvent,
 	onSearchEvents,
 }) {
-	const [showCardOptions, setShowCardOptions] = useState(false);
-
-	if (!activeCard) return <p>Загрузка данных карточки...</p>;
+	if (!activeCard)
+		return <p className="loading-state">Загрузка данных карточки...</p>;
 
 	const currentCategoryObj = categories.find(
 		(cat) => cat.id === activeCard.category,
@@ -30,30 +29,24 @@ function CardDetail({
 	return (
 		<div className="card-detail-container">
 			<header className="card-navigation-header">
-				<button onClick={onLeave}>Назад к спискам</button>
-				<button onClick={() => setShowCardOptions(!showCardOptions)}>
-					{showCardOptions ? 'Закрыть меню' : 'Управление карточкой'}
+				<button onClick={onLeave} className="back-btn">
+					Назад к спискам
 				</button>
+
+				<div className="options-buttons">
+					<button onClick={onUpdateCard}>
+						Редактировать название
+					</button>
+					<button
+						onClick={() => onDeleteCard(activeCard.id)}
+						className="danger-btn"
+					>
+						Удалить карточку
+					</button>
+				</div>
 			</header>
 
-			{showCardOptions && (
-				<div className="card-options-block">
-					<span className="options-label">
-						Действия с карточкой:{' '}
-					</span>
-					<div className="options-buttons">
-						<button onClick={onUpdateCard}>
-							Редактировать название
-						</button>
-						<button
-							onClick={() => onDeleteCard(activeCard.id)}
-							className="danger-btn"
-						>
-							Удалить карточку
-						</button>
-					</div>
-				</div>
-			)}
+			<div className="card-info-block" />
 
 			<div className="card-info-block">
 				<h2 className="card-detail-title">{activeCard.title}</h2>
@@ -81,6 +74,8 @@ function CardDetail({
 				onAddTask={onAddTask}
 				onEnterTask={onEnterTask}
 			/>
+
+			<div className="card-info-block" />
 
 			<EventSection
 				events={events}

@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { translateRRule } from '../../utils/dateHelpers';
 
 function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
-	const [showTaskOptions, setShowTaskOptions] = useState(false);
-
 	const formattedDate = task.start_date
 		? new Date(task.start_date).toLocaleDateString('ru-RU', {
 				day: 'numeric',
@@ -21,40 +19,45 @@ function TaskDetail({ task, onLeaveTask, onDeleteTask, onUpdateTask }) {
 	const recurrenceText = translateRRule(task.rrule_rule);
 
 	return (
-		<div>
+		<div className="card-detail-container">
 			<header className="task-navigation-header">
-				<button onClick={onLeaveTask}>Назад к задачам</button>
-				{' | '}
-				<button onClick={() => setShowTaskOptions(!showTaskOptions)}>
-					{showTaskOptions ? 'Закрыть меню' : 'Управление задачей'}
+				<button onClick={onLeaveTask} className="back-btn">
+					Назад к задачам
 				</button>
-			</header>
-			{showTaskOptions && (
-				<div className="task-options-block">
-					<span>Действия с задачей: </span>
+
+				<div className="options-buttons">
 					<button onClick={() => onUpdateTask(task)}>
 						Редактировать задачу
 					</button>
-					<button onClick={() => onDeleteTask(task.id)}>
+					<button
+						onClick={() => onDeleteTask(task.id)}
+						className="danger-btn"
+					>
 						Удалить задачу
 					</button>
 				</div>
-			)}
-			<hr />
-			<h1>{task.title}</h1>
-			<p>
-				<strong>Описание:</strong> {task.description || 'Нет описания'}
-			</p>
-			<p>
-				<strong>Статус:</strong>{' '}
-				{statusLabels[task.status] || task.status || 'Не указан'}
-			</p>
-			<p>
-				<strong>Дата выполнения:</strong> {formattedDate}
-			</p>
-			<p>
-				<strong>Периодичность:</strong> {recurrenceText}
-			</p>
+			</header>
+
+			<div className="card-info-block" />
+
+			<h2 className="card-detail-title">{task.title}</h2>
+
+			<div className="card-meta">
+				<p className="card-description">
+					<strong>Описание:</strong>{' '}
+					{task.description || 'Нет описания'}
+				</p>
+				<p>
+					<strong>Статус:</strong>{' '}
+					{statusLabels[task.status] || task.status || 'Не указан'}
+				</p>
+				<p>
+					<strong>Дата выполнения:</strong> {formattedDate}
+				</p>
+				<p>
+					<strong>Периодичность:</strong> {recurrenceText}
+				</p>
+			</div>
 		</div>
 	);
 }

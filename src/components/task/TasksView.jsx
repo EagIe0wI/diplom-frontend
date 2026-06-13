@@ -2,12 +2,15 @@ import React from 'react';
 import TaskFilter from './TaskFilter';
 import TaskList from './TaskList';
 
-function AllTasksView({
+function TasksView({
 	allTasks,
 	cards,
 	onSearchTasks,
 	onEnterTask,
 	onEnterCard,
+	onCompleteTask,
+	onPostponeTask,
+	hideFilter = false,
 }) {
 	const groupedTasks = allTasks.reduce((acc, task) => {
 		const cardId = task.card;
@@ -18,9 +21,12 @@ function AllTasksView({
 
 	return (
 		<div className="all-tasks-tab-view">
-			<div className="tab-filters-block">
-				<TaskFilter onSearchChange={onSearchTasks} />
-			</div>
+			{!hideFilter && (
+				<div className="tab-filters-block">
+					<TaskFilter onSearchChange={onSearchTasks} />
+				</div>
+			)}
+
 			{Object.keys(groupedTasks).map((cardId) => {
 				const parentCard = cards.find((c) => c.id === Number(cardId));
 				const cardTitle = parentCard
@@ -42,6 +48,8 @@ function AllTasksView({
 						<TaskList
 							tasks={groupedTasks[cardId]}
 							onEnterTask={onEnterTask}
+							onCompleteTask={onCompleteTask}
+							onPostponeTask={onPostponeTask}
 						/>
 					</div>
 				);
@@ -50,4 +58,4 @@ function AllTasksView({
 	);
 }
 
-export default AllTasksView;
+export default TasksView;

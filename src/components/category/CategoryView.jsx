@@ -17,10 +17,12 @@ function CategoryView({
 				</button>
 			</div>
 
-			<CategoryList
-				categories={categories}
-				onEnterCategory={onEnterCategory}
-			/>
+			<div className="card-list-grid">
+				<CategoryList
+					categories={categories}
+					onEnterCategory={onEnterCategory}
+				/>
+			</div>
 		</div>
 	);
 }

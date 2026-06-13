@@ -1,4 +1,4 @@
-/* ===== ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРОВ И ШАПКИ ===== */
+/* ===== 1. ГЛОБАЛЬНЫЕ СТИЛИ КОНТЕЙНЕРОВ И ШАПКИ ===== */
 .task-manager-container {
 	width: 100%;
 	max-width: 1200px;
@@ -21,7 +21,8 @@
 	opacity: 0.9;
 }
 
-.loading-state, .loading-state-text {
+.loading-state, 
+.loading-state-text {
 	font-size: 0.9em;
 	color: var(--text-main);
 	opacity: 0.7;
@@ -29,7 +30,8 @@
 	padding: var(--space-md);
 }
 
-/* ===== НАВИГАЦИЯ, ТАБЫ И ПАНЕЛИ УПРАВЛЕНИЯ ===== */
+
+/* ===== 2. НАВИГАЦИЯ, ТАБЫ И ПАНЕЛИ УПРАВЛЕНИЯ ===== */
 .tab-navigation {
 	display: flex;
 	gap: var(--space-sm);
@@ -53,7 +55,10 @@
 	cursor: default;
 }
 
-.cards-controls-block, .categories-controls-block, .tab-filters-block {
+.cards-controls-block, 
+.categories-controls-block, 
+.tab-filters-block,
+.section-controls-block {
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--space-sm);
@@ -61,7 +66,14 @@
 	align-items: center;
 }
 
-/* ===== СТИЛИ ДЛЯ СПИСКОВ И СТРОК ===== */
+.search-label {
+	font-size: 0.9em;
+	opacity: 0.8;
+	color: var(--text-main);
+}
+
+
+/* ===== 3. СТИЛИ ДЛЯ СПИСКОВ, СТРОК И ССЫЛОК ===== */
 .card-list-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
@@ -71,7 +83,8 @@
 	margin: 0;
 }
 
-.tasks-list-container, .events-list-container {
+.tasks-list-container, 
+.events-list-container {
 	list-style-type: none;
 	padding: 0;
 	margin: 0;
@@ -80,7 +93,8 @@
 	gap: var(--space-xs);
 }
 
-.task-list-item, .event-list-item {
+.task-list-item, 
+.event-list-item {
 	background-color: transparent;
 	border-radius: var(--radius-sm);
 	padding: var(--space-xs) var(--space-sm);
@@ -88,14 +102,19 @@
 	list-style-type: none;
 	display: flex;
 	align-items: center;
+	gap: var(--space-sm);
 	transition: background-color 0.2s ease;
 }
 
-.task-list-item:hover, .event-list-item:hover {
+.task-list-item:hover, 
+.event-list-item:hover {
 	background-color: var(--border-color);
 }
 
-.card-list-link, .category-list-link, .task-list-link, .event-list-link {
+.card-list-link, 
+.category-list-link, 
+.task-list-link, 
+.event-list-link {
 	color: var(--text-main);
 	font-weight: 500;
 	text-decoration: none;
@@ -103,29 +122,29 @@
 }
 
 .card-list-item:hover .card-list-link,
-.category-list-item:hover .category-list-link,
+.card-list-item:hover .category-list-link,
+.category-list-item:hover .category-list-link, 
 .task-list-item:hover .task-list-link,
 .event-list-item:hover .event-list-link {
 	color: var(--accent-color);
-	text-decoration: underline;
 }
 
-.card-group-title.clickable {
-	cursor: pointer;
-	transition: color 0.2s ease;
-}
 
-.card-group-title.clickable:hover {
-	color: var(--accent-color);
-}
-
-.card-navigation-header {
+/* ===== 4. ДЕТАЛЬНАЯ ИНФОРМАЦИЯ И ОПЦИИ КАРТОЧЕК ===== */
+.card-navigation-header, 
+.task-navigation-header {
 	display: flex;
+	justify-content: space-between;
 	gap: var(--space-sm);
-	margin-bottom: var(--space-md);
+	margin-bottom: var(--space-sm);
 }
 
-.card-options-block {
+.back-btn {
+	margin-right: var(--space-sm);
+}
+
+.card-options-block, 
+.task-options-block {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-xs);
@@ -133,7 +152,7 @@
 	padding: var(--space-sm);
 	border: 1px dashed var(--border-color);
 	border-radius: var(--radius-sm);
-	margin-bottom: var(--space-md);
+	margin: var(--space-sm) 0 var(--space-md) 0;
 }
 
 .options-label {
@@ -146,16 +165,6 @@
 	gap: var(--space-xs);
 }
 
-.danger-btn {
-	background-color: rgba(245, 108, 108, 0.1);
-	border: 1px solid #f56c6c !important;
-	color: #f56c6c;
-}
-.danger-btn:hover {
-	background-color: #f56c6c;
-	color: #ffffff;
-}
-
 .card-info-block {
 	margin-bottom: var(--space-lg);
 	padding-bottom: var(--space-md);
@@ -166,6 +175,13 @@
 	font-size: 1.6em;
 	margin-bottom: var(--space-sm);
 	color: var(--text-main);
+}
+
+.section-subtitle {
+	font-size: 1.2em;
+	font-weight: 600;
+	color: var(--text-main);
+	margin-bottom: var(--space-sm);
 }
 
 .card-meta {
@@ -181,41 +197,12 @@
 	opacity: 0.8;
 }
 
-/* ===== Блок управления внутри секций задач и событий ===== */
-.section-controls-block {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-sm);
-	margin-bottom: var(--space-md);
-	align-items: center;
-}
-
-.search-label {
-	font-size: 0.9em;
-	opacity: 0.8;
-	color: var(--text-main);
-}
-
-.section-subtitle {
-	font-size: 1.2em;
-	font-weight: 600;
-	color: var(--text-main);
-	margin-bottom: var(--space-sm);
-}
-
-.events-empty {
-	font-size: 0.9em;
-	opacity: 0.5;
-	font-style: italic;
-	color: var(--text-main);
-	padding: var(--space-sm) 0;
-}
-
 .card-tasks-section {
 	margin-bottom: var(--space-lg);
 }
 
-.events-empty, .tasks-empty {
+.events-empty, 
+.tasks-empty {
 	font-size: 0.9em;
 	opacity: 0.5;
 	font-style: italic;
@@ -223,13 +210,24 @@
 	padding: var(--space-sm) 0;
 }
 
-/* ===== БЛОКИ ГРУППИРОВКИ И КАРТОЧКИ (ПЛИТКИ) ===== */
-.card-list-item, .card-tasks-group-block, .card-events-group-block {
+.card-detail-container,
+.event-detail-container {
+	background-color: var(--bg-card);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-sm);
+	padding: var(--space-lg);
+	margin-top: var(--space-md);
+}
+
+
+/* ===== 5. БЛОКИ ГРУППИРОВКИ И КАРТОЧКИ (ПЛИТКИ) ===== */
+.card-list-item, 
+.card-tasks-group-block, 
+.card-events-group-block {
 	background-color: var(--bg-card);
 	border: 1px solid var(--border-color);
 	border-radius: var(--radius-sm);
 	padding: var(--space-md);
-	cursor: pointer;
 	list-style-type: none;
 	transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -238,19 +236,23 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-sm);
+	cursor: pointer;
 }
 
-.card-tasks-group-block, .card-events-group-block {
+.card-tasks-group-block, 
+.card-events-group-block {
 	margin-bottom: var(--space-md);
 	cursor: default;
 }
 
-.card-list-item:hover, .card-tasks-group-block:hover, .card-events-group-block:hover {
+.card-list-item:hover, 
+.card-tasks-group-block:hover, 
+.card-events-group-block:hover {
 	border-color: var(--accent-color);
 }
 
 .card-list-item:hover {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	box-shadow: var(--card-shadow);
 }
 
 .card-list-link {
@@ -272,27 +274,35 @@
 	border-bottom: 1px dashed var(--border-color);
 }
 
-/* ===== ФОРМЫ, ОШИБКИ И БАННЕРЫ ===== */
-.form-error, .login-form-error {
-	color: #ff3333;
+.card-group-title.clickable {
+	cursor: pointer;
+	transition: color 0.2s ease;
+}
+
+.card-group-title.clickable:hover {
+	color: var(--accent-color);
+}
+
+
+/* ===== 6. КНОПКИ, ОШИБКИ И БАННЕРЫ ===== */
+.danger-btn {
+	background-color: var(--danger-bg);
+	border: 1px solid var(--danger-color) !important;
+	color: var(--danger-color);
+}
+
+.danger-btn:hover {
+	background-color: var(--danger-color);
+	border-color: var(--danger-color) !important;
+	color: #ffffff;
+}
+
+.form-error, 
+.login-form-error {
+	color: var(--danger-color);
 	font-weight: 600;
 	font-size: 14px;
 	margin-bottom: var(--space-sm);
-}
-
-.back-btn {
-	margin-right: var(--space-sm);
-}
-
-.card-navigation-header, .task-navigation-header {
-	margin-bottom: var(--space-sm);
-}
-
-.card-options-block, .task-options-block {
-	border: 1px dashed var(--border-color);
-	padding: var(--space-xs);
-	margin: var(--space-sm) 0;
-	border-radius: var(--radius-sm);
 }
 
 .banners-holder {
@@ -303,7 +313,7 @@
 
 .today-banner-block {
 	background-color: var(--bg-card);
-	border: 1px solid #e6a23c;
+	border: 1px solid var(--warning-color);
 	padding: var(--space-md);
 	margin-bottom: var(--space-lg);
 	border-radius: var(--radius-sm);
@@ -312,15 +322,15 @@
 
 .overdue-banner-block {
 	background-color: var(--bg-card);
-	border: 1px dashed #f56c6c;
+	border: 1px dashed var(--danger-color);
 	padding: var(--space-xs) var(--space-sm);
 	margin: var(--space-sm) 0;
 	border-radius: var(--radius-sm);
-	color: #f56c6c;
+	color: var(--danger-color);
 }
 
-/* ===== СТИЛИЗАЦИЯ ФОРМ И ПОЛЕЙ ВВОДА (CUForm) ===== */
 
+/* ===== 7. СТИЛИЗАЦИЯ ФОРМ И ПОЛЕЙ ВВОДА ===== */
 form {
 	display: flex;
 	flex-direction: column;
@@ -338,7 +348,8 @@ form h3 {
 	margin-bottom: var(--space-xs);
 }
 
-form > div, form div > div {
+form > div, 
+form div > div {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-xs);
@@ -352,7 +363,11 @@ form label {
 	opacity: 0.8;
 }
 
-form textarea {
+form textarea,
+form input[type="text"],
+form input[type="date"],
+form input[type="number"],
+form select {
 	box-sizing: border-box;
 	background-color: var(--bg-main);
 	color: var(--text-main);
@@ -362,207 +377,107 @@ form textarea {
 	font-family: inherit;
 	font-size: 0.9em;
 	line-height: 1.4;
-	min-height: 80px;
-	resize: vertical;
 	outline: none;
 	transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-form input[type="date"], 
-form input[type="number"] {
-	box-sizing: border-box;
-	background-color: var(--bg-main);
-	color: var(--text-main);
-	border: 1px solid var(--border-color);
-	border-radius: var(--radius-sm);
-	padding: var(--space-xs) var(--space-sm);
-	font-family: inherit;
-	font-size: 0.9em;
-	outline: none;
-	transition: border-color 0.2s;
+form textarea {
+	min-height: 80px;
+	resize: vertical;
 }
 
 form textarea:focus, 
+form input[type="text"]:focus,
 form input[type="date"]:focus, 
-form input[type="number"]:focus {
+form input[type="number"]:focus,
+form select:focus {
 	border-color: var(--accent-color);
 	box-shadow: 0 0 0 1px var(--accent-color);
 }
 
+/* ===== 8. КНОПКИ ВНУТРИ ФОРМ (ИСПРАВЛЕНИЕ) ===== */
 form button[type="submit"], 
 form button[type="button"] {
 	margin-top: var(--space-sm);
+}
+
+form button[type="submit"] {
+	background-color: var(--accent-color);
+	border: 1px solid var(--accent-color);
+	color: #ffffff;
+}
+
+form button[type="submit"]:hover {
+	filter: brightness(1.1);
 }
 
 form button[type="button"] {
 	background-color: transparent;
 	border: 1px solid var(--border-color);
 	color: var(--text-main);
-	margin-left: var(--space-sm);
 }
 
 form button[type="button"]:hover {
 	background-color: var(--border-color);
 }
 
-form button[type="submit"] {
-	background-color: var(--accent-color);
-	color: #ffffff;
-}
 
-/* ===== СТИЛИЗАЦИЯ ОКРЫТИЯ АВТОРИЗАЦИИ (AUTH) ===== */
-.auth-form-container {
-	max-width: 320px;
-	margin: 15vh auto 0 auto;
-	padding: var(--space-lg);
-	background-color: var(--bg-card);
-	border: 1px solid var(--border-color);
-	border-radius: var(--radius-sm);
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-md);
-}
-
-.auth-form-title {
-	font-size: 0.95em;
-	font-weight: 500;
-	text-align: center;
-	color: var(--text-main);
-	opacity: 0.9;
-	margin-bottom: var(--space-xs);
-}
-
-.auth-form-container input[name="username"],
-.auth-form-container input[type="password"] {
-	box-sizing: border-box;
-	width: 100%;
-	background-color: var(--bg-main);
-	color: var(--text-main);
-	border: 1px solid var(--border-color);
-	border-radius: var(--radius-sm);
-	padding: var(--space-sm);
-	font-size: 0.9em;
-	outline: none;
-	transition: border-color 0.2s;
-}
-
-.auth-form-container input[name="username"]:focus,
-.auth-form-container input[type="password"]:focus {
-	border-color: var(--accent-color);
-}
-
-.login-form-error-field {
-	border-color: #ff3333 !important;
-	box-shadow: 0 0 0 1px #ff3333;
-}
-
-.auth-submit-btn {
-	box-sizing: border-box;
-	width: 100%;
-	background-color: var(--accent-color);
-	color: #ffffff;
-	border: 1px solid transparent;
-	border-radius: var(--radius-sm);
-	padding: var(--space-sm);
-	font-size: 0.95em;
-	font-weight: 600;
-	cursor: pointer;
-	display: block;
-	text-align: center;
-	transition: background-color 0.2s;
-}
-
-.auth-submit-btn:hover {
-	background-color: var(--border-color);
-}
-
-.auth-divider {
-	border: none;
-	border-top: 1px solid var(--border-color);
-	margin: var(--space-xs) 0;
-}
-
-.auth-footer {
+/* ===== 9. МОДАЛЬНЫЕ ОКНА ДЛЯ ФОРМ ===== */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: var(--overlay-bg);
+	backdrop-filter: blur(2px);
 	display: flex;
 	justify-content: center;
-	gap: var(--space-xs);
-	font-size: 0.85em;
-	color: var(--text-main);
-	opacity: 0.8;
+	align-items: center;
+	z-index: 1000;
 }
 
-.auth-link {
-	color: var(--accent-color);
-	text-decoration: none;
-	font-weight: 600;
+.modal-overlay form {
+	width: 450px !important;
+	max-width: 95vw !important;
+	max-height: 85vh;
+	overflow-y: auto; 
+	box-shadow: var(--modal-shadow); 
+	animation: modalFadeIn 0.2s ease-out; 
 }
 
-.auth-link:hover {
-	text-decoration: underline;
+.task-list-item.task-done {
+	opacity: 0.5;
+	background-color: rgba(0, 0, 0, 0.02);
+}
+.task-list-item.task-done .task-list-link {
+	text-decoration: line-through;
+	color: var(--text-main) !important;
 }
 
-/* ===== СТИЛИ ДЛЯ РЕГИСТРАЦИИ (MVP) ===== */
-form:has(h2:contains("Регистрация")), 
-form:has(input[placeholder="Логин"]) {
-	max-width: 320px;
-	margin: 15vh auto 0 auto;
-	padding: var(--space-lg);
-	background-color: var(--bg-card);
-	border: 1px solid var(--border-color);
-	border-radius: var(--radius-sm);
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-md);
+.task-list-item .options-buttons {
+	margin-left: auto;
 }
 
-form h2 {
-	font-size: 1.1em;
-	font-weight: 600;
-	text-align: center;
-	color: var(--text-main);
-	margin-bottom: var(--space-xs);
+.section-subtitle.overdue-title {
+	color: var(--danger-color);
+	border-bottom: 1px dashed var(--danger-color);
+	padding-bottom: var(--space-xs);
+	margin-bottom: var(--space-md);
 }
 
-form input[placeholder="Логин"] {
-	box-sizing: border-box;
-	width: 100%;
-	background-color: var(--bg-main);
-	color: var(--text-main);
-	border: 1px solid var(--border-color);
-	border-radius: var(--radius-sm);
-	padding: var(--space-sm);
-	font-size: 0.9em;
-	outline: none;
-	transition: border-color 0.2s;
+.tasks-list-container .section-subtitle {
+	color: var(--warning-color);
+	border-bottom: 1px dashed var(--warning-color);
+	padding-bottom: var(--space-xs);
+	margin-bottom: var(--space-md);
 }
 
-form input[placeholder="Логин"]:focus {
-	border-color: var(--accent-color);
+.tasks-list-container .section-subtitle.overdue-title {
+	color: var(--danger-color);
 }
 
-form button[type="submit"] {
-	box-sizing: border-box;
-	width: 100%;
-	background-color: var(--accent-color);
-	color: #ffffff;
-	border: 1px solid transparent;
-	border-radius: var(--radius-sm);
-	padding: var(--space-sm);
-	font-size: 0.95em;
-	font-weight: 600;
-	cursor: pointer;
-	transition: background-color 0.2s, border-color 0.2s;
-}
-
-form button[type="submit"]:hover {
-	background-color: var(--border-color);
-}
-
-form div:has(.auth-link) {
-	display: flex;
-	justify-content: center;
-	gap: var(--space-xs);
-	font-size: 0.85em;
-	color: var(--text-main);
-	opacity: 0.8;
+@keyframes modalFadeIn {
+	from { transform: translateY(-20px); opacity: 0; }
+	to { transform: translateY(0); opacity: 1; }
 }
