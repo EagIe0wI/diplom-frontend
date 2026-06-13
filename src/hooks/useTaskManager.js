@@ -96,7 +96,42 @@ export const useTaskManager = () => {
 		fetchTodayBannerTasks();
 	}, []);
 
-	// ===== БЛОК КАРТОЧЕК ===== //
+	const apiMap = {
+		card: { api: cardAPI, setAll: setCards, setActive: setActiveCard },
+		task: {
+			api: taskAPI,
+			setAll: setAllTasks,
+			setContext: setTasks,
+			setToday: setTodayTasks,
+		},
+		event: { api: eventAPI, setAll: setAllEvents, setContext: setEvents },
+		category: { api: categoryAPI, setAll: setCategories },
+	};
+
+	const fetchData = async (entityType, contextId = null, searchText = '') => {
+		const config = apiMap[entityType];
+		if (!config) return;
+
+		try {
+			const responseData = await config.api.getAll(contextId, searchText);
+			const actualData =
+				responseData.results ||
+				responseData[entityType + 's'] ||
+				responseData;
+			const dataArray = Array.isArray(actualData) ? actualData : [];
+			if (contextId && config.setContext) {
+				config.setContext(dataArray);
+			} else {
+				config.setAll(dataArray);
+			}
+		} catch (err) {
+			console.error(
+				`Ошибка при получении данных для ${entityType}:`,
+				err,
+			);
+		}
+	};
+
 	const fetchFilteredCards = async (search, categoryId) => {
 		setLoadingCards(true);
 		try {
@@ -109,10 +144,113 @@ export const useTaskManager = () => {
 		}
 	};
 
+	const handleFormSuccess = ({ action, data }) => {
+		setFormConfig(null);
+
+		const match = action.match(
+			/^(create|update)(Card|Task|Event|Category)$/,
+		);
+		if (!match) return;
+
+		const mode = match[1];
+		const entityType = match[2].toLowerCase();
+		const config = apiMap[entityType];
+
+		if (!config) return;
+
+		if (mode === 'create') {
+			config.setAll((prev) => [...prev, data]);
+			if (config.setContext) {
+				config.setContext((prev) => [...prev, data]);
+			}
+		} else if (mode === 'update') {
+			const updateArray = (prev) =>
+				prev.map((item) => (item.id === data.id ? data : item));
+
+			config.setAll(updateArray);
+			if (config.setContext) config.setContext(updateArray);
+			if (config.setToday) config.setToday(updateArray);
+			if (config.setActive) config.setActive(data);
+			if (activeTask && activeTask.id === data.id) setActiveTask(data);
+			if (activeEvent && activeEvent.id === data.id) setActiveEvent(data);
+		}
+	};
+
+	const handleGenericDelete = async (entityType, id, confirmMessage) => {
+		if (!confirm(confirmMessage)) return;
+
+		const config = apiMap[entityType];
+		if (!config) return;
+
+		try {
+			await config.api.delete(id);
+			config.setAll((prev) => prev.filter((item) => item.id !== id));
+			if (entityType === 'card') {
+				setAllTasks((prev) => prev.filter((t) => t.card !== id));
+				setActiveCard(null);
+				setTasks([]);
+			} else if (entityType === 'task') {
+				setTasks((prev) => prev.filter((t) => t.id !== id));
+				setTodayTasks((prev) => prev.filter((t) => t.id !== id));
+			} else if (entityType === 'event') {
+				setEvents((prev) => prev.filter((e) => e.id !== id));
+			}
+		} catch (err) {
+			console.error(`Не удалось удалить сущность ${entityType}:`, err);
+		}
+	};
+
+	// --- ПОИСКОВИКИ ---
 	const handleSearchCards = async (searchText) => {
 		setCurrentSearch(searchText);
 		fetchFilteredCards(searchText, currentCategory);
 	};
+
+	const handleSearchTasks = (searchText) =>
+		fetchData('task', null, searchText);
+
+	const handleSearchCardTasks = (searchText) =>
+		activeCard && fetchData('task', activeCard.id, searchText);
+
+	const handleSearchEvents = (searchText) =>
+		fetchData('event', null, searchText);
+
+	const handleSearchCardEvents = (searchText) =>
+		activeCard && fetchData('event', activeCard.id, searchText);
+
+	const handleSearchCategory = (searchText) =>
+		fetchData('category', null, searchText);
+
+	// --- ФУНКЦИЙ УДАЛЕНИЯ ---
+	const handleDeleteCard = (cardId) =>
+		handleGenericDelete(
+			'card',
+			cardId,
+			'Удалить карточку и все её задачи/события?',
+		);
+
+	const handleDeleteTask = (taskId) =>
+		handleGenericDelete(
+			'task',
+			taskId,
+			'Вы уверены, что хотите удалить эту задачу?',
+		);
+
+	const handleDeleteEvent = (eventId) =>
+		handleGenericDelete(
+			'event',
+			eventId,
+			'Удалить эту запись из дневника событий?',
+		);
+
+	const handleDeleteCategory = (catId) =>
+		handleGenericDelete(
+			'category',
+			catId,
+			'Вы уверены, что хотите удалить эту категорию?',
+		);
+
+	// ===== БЛОК КАРТОЧЕК ===== //
 
 	const handleCategoryChange = (categoryId) => {
 		setCurrentCategory(categoryId);
@@ -159,19 +297,6 @@ export const useTaskManager = () => {
 		fetchFilteredCards('', '');
 	};
 
-	const handleDeleteCard = async (cardId) => {
-		if (!confirm('Удалить карточку?')) return;
-		try {
-			await cardAPI.delete(cardId);
-			setCards((prev) => prev.filter((c) => c.id !== cardId));
-			setAllTasks((prev) => prev.filter((t) => t.card !== cardId));
-			setActiveCard(null);
-			setTasks([]);
-		} catch (err) {
-			console.error('Ошибка при удалении карточки:', err);
-		}
-	};
-
 	// ===== БЛОК ЗАДАЧ ===== //
 	const fetchTodayBannerTasks = async () => {
 		try {
@@ -184,27 +309,6 @@ export const useTaskManager = () => {
 			setOverdueTasks(overdueData.results || overdueData);
 		} catch (err) {
 			console.error('Ошибка обновления баннеров:', err);
-		}
-	};
-
-	const handleSearchTasks = async (searchText) => {
-		try {
-			const data = await taskAPI.getAll(null, searchText);
-			const actualTasks = data.results || data.tasks || data;
-			setAllTasks(Array.isArray(actualTasks) ? actualTasks : []);
-		} catch (err) {
-			console.error('Ошибка глобального поиска задач:', err);
-		}
-	};
-
-	const handleSearchCardTasks = async (searchText) => {
-		if (!activeCard) return;
-		try {
-			const data = await taskAPI.getAll(activeCard.id, searchText);
-			const actualTasks = data.results || data.tasks || data;
-			setTasks(Array.isArray(actualTasks) ? actualTasks : []);
-		} catch (err) {
-			console.error('Ошибка контекстного поиска задач:', err);
 		}
 	};
 
@@ -225,17 +329,6 @@ export const useTaskManager = () => {
 			}
 		}
 		setActiveTask(task);
-	};
-
-	const handleDeleteTask = async (taskId) => {
-		try {
-			await taskAPI.delete(taskId);
-			setTasks((prev) => prev.filter((t) => t.id !== taskId));
-			setAllTasks((prev) => prev.filter((t) => t.id !== taskId));
-			setTodayTasks((prev) => prev.filter((t) => t.id !== taskId));
-		} catch (err) {
-			console.error('Ошибка при удалении задачки:', err);
-		}
 	};
 
 	const handleCompleteTodayTask = async (task) => {
@@ -276,101 +369,6 @@ export const useTaskManager = () => {
 		} catch (err) {
 			console.error('Не удалось отложить задачу:', err);
 		}
-	};
-
-	// ===== БЛОК СОБЫТИЙ ===== //
-	const handleSearchEvents = async (searchText) => {
-		try {
-			const data = await eventAPI.getAll(null, searchText);
-			const actualEvents = data.results || data.events || data;
-			setAllEvents(Array.isArray(actualEvents) ? actualEvents : []);
-		} catch (err) {
-			console.error('Ошибка поиска событий:', err);
-		}
-	};
-
-	const handleSearchCardEvents = async (searchText) => {
-		if (!activeCard) return;
-		try {
-			const data = await eventAPI.getAll(activeCard.id, searchText);
-			const actualEvents = data.results || data.events || data;
-			setEvents(Array.isArray(actualEvents) ? actualEvents : []);
-		} catch (err) {
-			console.error('Ошибка контекстного поиска событий:', err);
-		}
-	};
-
-	const handleDeleteEvent = async (eventId) => {
-		if (!confirm('Удалить запись из дневника?')) return;
-		try {
-			await eventAPI.delete(eventId);
-			setEvents((prev) => prev.filter((e) => e.id !== eventId));
-		} catch (err) {
-			console.error('Ошибка при удалении события:', err);
-		}
-	};
-
-	// ===== БЛОК КАТЕГОРИЙ ===== //
-	const handleSearchCategory = async (searchText) => {
-		try {
-			const data = await categoryAPI.getAll(searchText);
-			const actualCategories = data.results || data.categories || data;
-			setCategories(
-				Array.isArray(actualCategories) ? actualCategories : [],
-			);
-		} catch (err) {
-			console.error('Ошибка поиска категорий:', err);
-		}
-	};
-
-	const handleDeleteCategory = async (catId) => {
-		if (!confirm('Вы уверены, что хотите удалить эту категорию?')) return;
-		try {
-			await categoryAPI.delete(catId);
-			setCategories((prev) => prev.filter((c) => c.id !== catId));
-		} catch (err) {
-			console.error('Ошибка при удалении категории:', err);
-		}
-	};
-
-	// ===== СИСТЕМНЫЕ ХЭНДЛЕРЫ И UI ===== //
-	const handleFormSuccess = ({ action, data }) => {
-		setFormConfig(null);
-		if (action === 'createCard') {
-			setCards((prev) => [...prev, data]);
-		} else if (action === 'updateCard') {
-			setCards((prev) => prev.map((c) => (c.id === data.id ? data : c)));
-			setActiveCard(data);
-		} else if (action === 'createCategory') {
-			setCategories((prev) => [...prev, data]);
-		} else if (action === 'updateCategory') {
-			setCategories((prev) =>
-				prev.map((cat) => (cat.id === data.id ? data : cat)),
-			);
-		} else if (action === 'createTask') {
-			setTasks((prev) => [...prev, data]);
-			setAllTasks((prev) => [...prev, data]);
-		} else if (action === 'updateTask') {
-			setTasks((prev) => prev.map((t) => (t.id === data.id ? data : t)));
-			setAllTasks((prev) =>
-				prev.map((t) => (t.id === data.id ? data : t)),
-			);
-			setTodayTasks((prev) =>
-				prev.map((t) => (t.id === data.id ? data : t)),
-			);
-			if (activeTask && activeTask.id === data.id) {
-				setActiveTask(data);
-			}
-		} else if (action === 'createEvent') {
-			setEvents((prev) => [...prev, data]);
-			setAllEvents((prevAll) => [...prevAll, data]);
-		} else if (action === 'updateEvent') {
-			setEvents((prev) => prev.map((e) => (e.id === data.id ? data : e)));
-			if (activeEvent && activeEvent.id === data.id) {
-				setActiveEvent(data);
-			}
-		}
-		setFormConfig(null);
 	};
 
 	const handleLogout = async () => {
