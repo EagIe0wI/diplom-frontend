@@ -7,11 +7,11 @@ import CategoryList from '../components/category/CategoryList';
 import CategoryFilter from '../components/category/CategorySelect';
 import CategoryView from '../components/category/CategoryView';
 import CategoryDetail from '../components/category/CategoryDetail';
-import TaskList from '../components/task/TaskList';
+import AllTasksView from '../components/task/AllTasksView';
 import TaskDetail from '../components/task/TaskDetail';
 import TasksTodayView from '../components/task/TasksTodayView';
 import TasksOverdueView from '../components/task/TasksOverdueView';
-import TasksView from '../components/task/TasksView';
+import TasksView from '../components/task/AllTasksView';
 import EventDetail from '../components/event/EventDetail';
 import AllEventsView from '../components/event/AllEventsView';
 import CUForm from '../components/CreateUpdateForm';
@@ -33,7 +33,9 @@ const TaskManager = () => {
 		tasks,
 		allTasks,
 		todayTasks,
+		todayCount,
 		overdueTasks,
+		overdueCount,
 		activeTask,
 		setActiveTask,
 		loadingTasks,
@@ -181,7 +183,7 @@ const TaskManager = () => {
 						onClick={() => setCurrentTab('today')}
 						disabled={currentTab === 'today'}
 					>
-						Задачи на сегодня
+						Задачи на сегодня {todayCount > 0 && `(${todayCount})`}
 					</button>
 
 					{overdueTasks && overdueTasks.length > 0 && (
@@ -190,7 +192,7 @@ const TaskManager = () => {
 							onClick={() => setCurrentTab('overdue')}
 							disabled={currentTab === 'overdue'}
 						>
-							Просроченные задачи
+							Просроченные задачи ({overdueCount})
 						</button>
 					)}
 
@@ -298,6 +300,7 @@ const TaskManager = () => {
 							onEnterEvent={(eventObj) =>
 								setActiveEvent(eventObj)
 							}
+							onEnterCard={handleEnterCard}
 						/>
 					)}
 

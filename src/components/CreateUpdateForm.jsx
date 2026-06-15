@@ -57,9 +57,13 @@ const CUForm = ({
 					);
 					onSuccess({ action: 'createCard', data: newCard });
 				} else if (mode === 'update') {
+					const cleanCategoryId =
+						categoryId !== '' ? Number(categoryId) : null;
 					const updatedCard = await cardAPI.update(
 						initialData.id,
 						title,
+						description,
+						cleanCategoryId,
 					);
 					onSuccess({ action: 'updateCard', data: updatedCard });
 				}
@@ -174,22 +178,20 @@ const CUForm = ({
 					onChange={(e) => setDescription(e.target.value)}
 				/>
 			</div>
-			{mode === 'create' && (
-				<div>
-					<label>Категория (Опционально): </label>
-					<select
-						value={categoryId}
-						onChange={(e) => setCategoryId(e.target.value)}
-					>
-						<option value="">-- Без категории --</option>
-						{categories.map((cat) => (
-							<option key={cat.id} value={cat.id}>
-								{cat.title}
-							</option>
-						))}
-					</select>
-				</div>
-			)}
+			<div>
+				<label>Категория (Опционально): </label>
+				<select
+					value={categoryId}
+					onChange={(e) => setCategoryId(e.target.value)}
+				>
+					<option value="">-- Без категории --</option>
+					{categories.map((cat) => (
+						<option key={cat.id} value={cat.id}>
+							{cat.title}
+						</option>
+					))}
+				</select>
+			</div>
 		</div>
 	);
 
@@ -289,6 +291,19 @@ const CUForm = ({
 		</div>
 	);
 
+	const renderCategoryFields = () => (
+		<div>
+			<div>
+				<label>Описание категории: </label>
+				<textarea
+					value={description}
+					onChange={(e) => setDescription(e.target.value)}
+					placeholder="Введите описание для категории..."
+				/>
+			</div>
+		</div>
+	);
+
 	return (
 		<div>
 			{!type && mode === 'create' && (
@@ -329,7 +344,8 @@ const CUForm = ({
 					</div>
 					{type === 'card' && renderCardFields()}
 					{type === 'task' && renderTaskFields()}
-					{type === 'event' && renderEventFields()}{' '}
+					{type === 'event' && renderEventFields()}
+					{type === 'category' && renderCategoryFields()}
 					<div>
 						<button type="submit">Сохранить</button>
 						<button type="button" onClick={onCancel}>

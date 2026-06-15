@@ -19,7 +19,9 @@ export const useTaskManager = () => {
 	const [tasks, setTasks] = useState([]);
 	const [allTasks, setAllTasks] = useState([]);
 	const [todayTasks, setTodayTasks] = useState([]);
+	const [todayCount, setTodayCount] = useState(0);
 	const [overdueTasks, setOverdueTasks] = useState([]);
+	const [overdueCount, setOverdueCount] = useState(0);
 	const [activeTask, setActiveTask] = useState(null);
 	const [loadingTasks, setLoadingTasks] = useState(false);
 
@@ -93,7 +95,7 @@ export const useTaskManager = () => {
 			.catch((err) => console.error('Ошибка инициализации данных:', err))
 			.finally(() => setLoadingCards(false));
 
-		fetchTodayBannerTasks();
+		fetchTodayTasks();
 	}, []);
 
 	const apiMap = {
@@ -298,7 +300,7 @@ export const useTaskManager = () => {
 	};
 
 	// ===== БЛОК ЗАДАЧ ===== //
-	const fetchTodayBannerTasks = async () => {
+	const fetchTodayTasks = async () => {
 		try {
 			const localIsoDate = new Date().toISOString().split('T')[0];
 			const [todayData, overdueData] = await Promise.all([
@@ -306,7 +308,10 @@ export const useTaskManager = () => {
 				taskAPI.getOverdue(localIsoDate),
 			]);
 			setTodayTasks(todayData.results || todayData);
+			setTodayCount(todayData.count || 0);
+
 			setOverdueTasks(overdueData.results || overdueData);
+			setOverdueCount(overdueData.count || 0);
 		} catch (err) {
 			console.error('Ошибка обновления баннеров:', err);
 		}
@@ -341,7 +346,7 @@ export const useTaskManager = () => {
 				task.card,
 				task.description,
 			);
-			await fetchTodayBannerTasks();
+			await fetchTodayTasks();
 			setAllTasks((prevAll) =>
 				prevAll.map((t) =>
 					t.id === task.id ? { ...t, status: 'done' } : t,
@@ -365,7 +370,7 @@ export const useTaskManager = () => {
 				task.card,
 				task.description,
 			);
-			await fetchTodayBannerTasks();
+			await fetchTodayTasks();
 		} catch (err) {
 			console.error('Не удалось отложить задачу:', err);
 		}
@@ -392,7 +397,9 @@ export const useTaskManager = () => {
 		tasks,
 		allTasks,
 		todayTasks,
+		todayCount,
 		overdueTasks,
+		overdueCount,
 		activeTask,
 		setActiveTask,
 		loadingTasks,
@@ -402,7 +409,7 @@ export const useTaskManager = () => {
 		handleCompleteTodayTask,
 		handlePostponeTodayTask,
 		handleEnterTodayTask,
-		fetchTodayBannerTasks,
+		fetchTodayTasks,
 
 		// --- 3. СОБЫТИЯ ---
 		events,

@@ -20,8 +20,12 @@ export const cardAPI = {
 		return response.data;
 	},
 
-	update: async (id, title) => {
-		const response = await api.put(`/cards/${id}/update/`, { title });
+	update: async (id, title, description = '', categoryId = null) => {
+		const response = await api.put(`/cards/${id}/update/`, {
+			title,
+			description,
+			category: categoryId === '' ? null : categoryId,
+		});
 		return response.data;
 	},
 

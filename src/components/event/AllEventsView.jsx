@@ -2,7 +2,13 @@ import React from 'react';
 import EventList from './EventList';
 import EventFilter from './EventFilter';
 
-function AllEventsView({ allEvents, cards, onSearchEvents, onEnterEvent }) {
+function AllEventsView({
+	allEvents,
+	cards,
+	onSearchEvents,
+	onEnterEvent,
+	onEnterCard,
+}) {
 	const groupedEvents = allEvents.reduce((acc, event) => {
 		const cardId = event.card;
 		if (!acc[cardId]) acc[cardId] = [];
@@ -21,9 +27,19 @@ function AllEventsView({ allEvents, cards, onSearchEvents, onEnterEvent }) {
 				const cardTitle = parentCard
 					? parentCard.title
 					: `Карточка (ID: ${cardId})`;
+
 				return (
 					<div key={cardId} className="card-events-group-block">
-						<h3 className="card-group-title">{cardTitle}</h3>
+						<h3
+							className="card-group-title clickable"
+							onClick={() =>
+								parentCard &&
+								onEnterCard &&
+								onEnterCard(parentCard)
+							}
+						>
+							{cardTitle}
+						</h3>
 						<EventList
 							events={groupedEvents[cardId]}
 							onEnterEvent={onEnterEvent}

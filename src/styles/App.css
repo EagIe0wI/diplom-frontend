@@ -72,7 +72,6 @@
 	color: var(--text-main);
 }
 
-
 /* ===== 3. СТИЛИ ДЛЯ СПИСКОВ, СТРОК И ССЫЛОК ===== */
 .card-list-grid {
 	display: grid;
@@ -132,7 +131,8 @@
 
 /* ===== 4. ДЕТАЛЬНАЯ ИНФОРМАЦИЯ И ОПЦИИ КАРТОЧЕК ===== */
 .card-navigation-header, 
-.task-navigation-header {
+.task-navigation-header,
+.category-navigation-header {
 	display: flex;
 	justify-content: space-between;
 	gap: var(--space-sm);
@@ -211,7 +211,8 @@
 }
 
 .card-detail-container,
-.event-detail-container {
+.event-detail-container,
+.category-detail-container {
 	background-color: var(--bg-card);
 	border: 1px solid var(--border-color);
 	border-radius: var(--radius-sm);
@@ -395,7 +396,7 @@ form select:focus {
 	box-shadow: 0 0 0 1px var(--accent-color);
 }
 
-/* ===== 8. КНОПКИ ВНУТРИ ФОРМ (ИСПРАВЛЕНИЕ) ===== */
+/* ===== 8. КНОПКИ ВНУТРИ ФОРМ ===== */
 form button[type="submit"], 
 form button[type="button"] {
 	margin-top: var(--space-sm);

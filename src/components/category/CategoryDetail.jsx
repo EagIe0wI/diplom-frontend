@@ -9,22 +9,33 @@ function CategoryDetail({
 	return (
 		<div className="category-detail-container">
 			<header className="category-navigation-header">
-				<button onClick={onLeaveCategory}>← Назад к категориям</button>
-				{' | '}
-				<button onClick={() => onUpdateCategory(category)}>
-					Редактировать
+				<button className="back-btn" onClick={onLeaveCategory}>
+					Назад к категориям
 				</button>
-				<button onClick={() => onDeleteCategory(category.id)}>
-					Удалить категорию
-				</button>
+
+				<div className="options-buttons">
+					<button onClick={() => onUpdateCategory(category)}>
+						Редактировать
+					</button>
+					<button
+						className="danger-btn"
+						onClick={() => onDeleteCategory(category.id)}
+					>
+						Удалить категорию
+					</button>
+				</div>
 			</header>
 
-			<hr />
-			<h2>{category.title}</h2>
-			<p>
-				<strong>Описание категории:</strong>{' '}
-				{category.description || 'Описание отсутствует.'}
-			</p>
+			<div className="card-info-block" />
+
+			<h2 className="card-detail-title">{category.title}</h2>
+
+			<div className="card-meta">
+				<p className="card-description">
+					<strong>Описание категории: </strong>
+					{category.description || 'Описание отсутствует.'}
+				</p>
+			</div>
 		</div>
 	);
 }
