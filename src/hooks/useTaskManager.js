@@ -167,14 +167,16 @@ export const useTaskManager = () => {
 			}
 		} else if (mode === 'update') {
 			const updateArray = (prev) =>
-				prev.map((item) => (item.id === data.id ? data : item));
+				prev.map((item) => (item.id === data.id ? { ...data } : item));
 
 			config.setAll(updateArray);
 			if (config.setContext) config.setContext(updateArray);
 			if (config.setToday) config.setToday(updateArray);
-			if (config.setActive) config.setActive(data);
-			if (activeTask && activeTask.id === data.id) setActiveTask(data);
-			if (activeEvent && activeEvent.id === data.id) setActiveEvent(data);
+			if (config.setActive) config.setActive({ ...data });
+			if (activeTask && activeTask.id === data.id)
+				setActiveTask({ ...data });
+			if (activeEvent && activeEvent.id === data.id)
+				setActiveEvent({ ...data });
 		}
 	};
 
